@@ -54,10 +54,9 @@ export function Sidebar() {
             icon={<span className="thumb">{p.trackIds[0] ? <Img src={tracks[p.trackIds[0]]?.artwork} alt="" /> : <MusicNotes size={14} />}</span>} />
         ))}
       </div>
-      {/* The YouTube player docks here (≥200×200, always visible while a YouTube track plays). */}
       {np && cur.name !== 'now' && (
-        <div className="tile-slot no-drag" data-video-slot="tile" onClick={() => navigate({ name: 'now' })} role="button" aria-label={t.now} tabIndex={0}>
-          {(np.source === 'local' || np.source === 'ytm') && <Img src={np.artwork} alt={np.title} />}
+        <div className="tile-slot no-drag" onClick={() => navigate({ name: 'now' })} role="button" aria-label={t.now} tabIndex={0}>
+          <Img src={np.artwork} alt={np.title} />
         </div>
       )}
       <div className="no-drag" style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 6 }}>

@@ -35,14 +35,13 @@ fn user_agent() -> Option<&'static str> {
 
 /// Open (or focus) the YouTube Music window, optionally at a music.youtube.com URL such as a search.
 #[tauri::command]
-pub fn ytm_open(app: AppHandle, url: Option<String>) -> Result<(), String> {
+pub fn ytm_open(app: AppHandle, url: Option<String>, focus: Option<bool>) -> Result<(), String> {
     let target = url.filter(|u| u.starts_with(HOME)).unwrap_or_else(|| HOME.into());
     let parsed: tauri::Url = target.parse().map_err(|_| "bad url".to_string())?;
     if let Some(w) = app.get_webview_window("ytm") {
         if target != HOME { w.navigate(parsed).map_err(|e| e.to_string())?; }
-        let _ = w.unminimize();
-        let _ = w.show();
-        let _ = w.set_focus();
+        // When Echo's queue changes song, the window may stay minimized in the background.
+        if focus.unwrap_or(true) { let _ = w.unminimize(); let _ = w.show(); let _ = w.set_focus(); }
         return Ok(());
     }
     let mut b = WebviewWindowBuilder::new(&app, "ytm", WebviewUrl::External(parsed))

@@ -10,7 +10,7 @@ function invoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
 }
 
 export type YtVideo = { id: string; title: string; channel: string; thumb: string; duration: number }
-export type ConfigStatus = { youtube: boolean; ai: boolean; ai_base: string; ai_model: string; spotify: boolean }
+export type ConfigStatus = { youtube: boolean; ai: boolean; ai_base: string; ai_model: string; ai_protocol: string; spotify: boolean }
 export type Count = { key: string; sub: string; plays: number; minutes: number }
 export type Stats = {
   minutes: number; plays: number; tracks: number; artists: number
@@ -27,6 +27,7 @@ export const api = {
   ytSearch: (q: string, max = 15) => invoke<YtVideo[]>('yt_search', { q, max }),
   ai: (messages: { role: 'system' | 'user' | 'assistant'; content: string }[], json = false, cacheKey?: string) =>
     invoke<string>('ai_chat', { messages, json, cacheKey }),
+  aiModels: () => invoke<string[]>('ai_models'),
   importPlaylist: (url: string) => invoke<Imported>('import_playlist', { url }),
   localScan: (paths: string[]) => invoke<LocalTrack[]>('local_scan', { paths }),
   localAllow: (paths: string[]) => invoke<void>('local_allow', { paths }),
@@ -34,7 +35,7 @@ export const api = {
   playLog: (a: { trackId: string; title: string; artist: string; genre?: string; mood?: string; seconds: number }) => invoke<void>('play_log', a),
   stats: (days: number) => invoke<Stats>('stats', { days, tzOffsetMin: -new Date().getTimezoneOffset() }),
   miniToggle: () => invoke<boolean>('mini_toggle'),
-  ytmOpen: (url?: string) => invoke<void>('ytm_open', { url }),
+  ytmOpen: (url?: string, focus = true) => invoke<void>('ytm_open', { url, focus }),
   discord: (clientId: string, t?: { title: string; artist: string; start?: number; end?: number }) =>
     invoke<void>('discord_update', { clientId, title: t?.title, artist: t?.artist, start: t?.start, end: t?.end }).catch(() => {}),
 }
@@ -62,7 +63,9 @@ export function errText(e: unknown, sv: boolean): string {
     'youtube:nokey': ['Lägg till en YouTube API-nyckel i Inställningar → Integrationer.', 'Add a YouTube API key in Settings → Integrations.'],
     'youtube:quota': ['YouTube-kvoten för idag är slut. Den återställs vid midnatt (Stillahavstid).', 'Today’s YouTube quota is used up. It resets at midnight Pacific time.'],
     'youtube:key': ['YouTube-nyckeln är ogiltig.', 'The YouTube key is invalid.'],
-    'ai:nokey': ['Lägg till en AI-nyckel (Mistral eller DeepSeek) i Inställningar → Integrationer.', 'Add an AI key (Mistral or DeepSeek) in Settings → Integrations.'],
+    'ai:nokey': ['Välj en AI-leverantör och lägg till en nyckel i Inställningar → Integrationer.', 'Pick an AI provider and add a key in Settings → Integrations.'],
+    'ai:nomodel': ['Välj en AI-modell i Inställningar → Integrationer.', 'Choose an AI model in Settings → Integrations.'],
+    'ai:refusal': ['AI:n avböjde förfrågan.', 'The AI declined this request.'],
     'import:unsupported': ['Länken stöds inte. Klistra in låtlistan som text i stället.', 'Unsupported link. Paste the track list as text instead.'],
     'import:spotify-nokey': ['Spotify-import kräver ett Client ID och Secret i Inställningar → Integrationer.', 'Spotify import needs a Client ID and Secret in Settings → Integrations.'],
     'youtube:150': ['Den här videon får inte spelas utanför YouTube.', 'This video can’t be played outside YouTube.'],

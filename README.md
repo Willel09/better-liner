@@ -1,23 +1,24 @@
 # Echo
 
-En musikspelare för desktop: Tauri (Rust) + React/TypeScript, Liquid Glass-design, AI-funktioner via Mistral eller DeepSeek.
+En musikspelare för Windows och Mac: Tauri (Rust) + React/TypeScript, Liquid Glass-design och AI-funktioner via valfri AI-leverantör.
 
 ## Så fungerar den
 
 1. **YouTube Music, ingen nyckel:** klicka på *YouTube Music* i sidomenyn och logga in med ditt Google-konto. Den riktiga music.youtube.com öppnas i ett Echo-fönster. Det som spelas där syns i Echos spelarfält, Spelas nu (med lyrics), statistiken, miniplayern och Discord, och Echos knappar styr det.
-2. **Valfritt: YouTube Data API-nyckel.** Med en nyckel kan Echo även söka och spela YouTube i sin egen spelarmotor, med crossfade, Smart Shuffle, Smart Radio och AI-köer.
-3. **Lyrics** hämtas från LRCLIB, rad- och ordsynkade.
-4. **Importera** spellistor från Spotify och Deezer via länk, eller från Apple Music, SoundCloud m.fl. genom att klistra in låtlistan som text. Låtarna sparas som titel + artist och matchas mot YouTube först när de ska spelas, så en import kostar ingen API-kvot.
-5. **Lokala filer** spelas där de ligger. Rust räknar ut exakt BPM och ljudstyrka från ljudet.
+2. **Bara omslag, ingen video.** Allt från YouTube spelas i YouTube Music-fönstret, som kan ligga minimerat. Echo visar album- och låtomslag, och Echos kö, Smart Shuffle, Smart Radio och AI-listor bestämmer vad som spelas.
+3. **Valfritt: YouTube Data API-nyckel.** Med en nyckel kan Echo själv hitta låtarna på YouTube, så att importerade spellistor och AI-förslag spelas automatiskt. Utan nyckel öppnas sökningen i YouTube Music och du klickar själv på låten.
+4. **Lyrics** hämtas från LRCLIB, rad- och ordsynkade.
+5. **Importera** spellistor från Spotify och Deezer via länk, eller från Apple Music, SoundCloud m.fl. genom att klistra in låtlistan som text. Låtarna sparas som titel + artist och matchas mot YouTube först när de ska spelas, så en import kostar ingen API-kvot.
+6. **Lokala filer** spelas där de ligger. Rust räknar ut exakt BPM och ljudstyrka från ljudet.
 
 **Ingenting laddas ner.** All musik strömmas. Lokalt sparas bara metadata (bibliotek, statistik, cache för sökträffar och AI-svar), vilket blir några MB.
 
 ## Funktioner
 
 - **Smart Shuffle:** samma artist kommer inte tillbaka för tätt, inga dubbletter, nyss spelade låtar hamnar sist, och lägen för genre, stämning och tempo.
-- **Crossfade:** 0–12 s med en övergångskurva utan volymhål. Hoppas över mellan låtar på samma album. Automatisk volymanpassning för lokala filer.
+- **Crossfade:** 0–12 s med en övergångskurva utan volymhål, mellan lokala filer. Hoppas över mellan låtar på samma album. Automatisk volymanpassning för lokala filer.
 - **Miniplayer:** eget fönster som alltid ligger överst, med omslag, titel och kontroller.
-- **AI:** spellistebyggare, stämning, genre och BPM, liknande låtar, upptäckter, AI DJ (jämna övergångar i tempo och energi, med valfri uppläsning), lyssningsassistent, Smart Radio och Music DNA.
+- **AI, valfri leverantör:** OpenAI, Anthropic (Claude), Google Gemini, Mistral, DeepSeek, Groq, OpenRouter, xAI, Together, lokala modeller via Ollama eller LM Studio, eller vilken OpenAI-kompatibel adress som helst. *Hämta modeller* listar leverantörens modeller. Funktioner: spellistebyggare, stämning, genre och BPM, liknande låtar, upptäckter, AI DJ (jämna övergångar i tempo och energi, med valfri uppläsning), lyssningsassistent, Smart Radio och Music DNA.
 - **Sidor:** Hem, Upptäck, Bibliotek, Spellistor (vanliga, smarta och AI-skapade), Artister, Album, Spelas nu, AI Studio, Statistik och Inställningar.
 - **Spotify-liknande extrafunktioner:** insomningstimer, equalizer (lokala filer), "Dölj låt", "Spela inte artisten", privat lyssning, Daily Mix och stämningsmixar, sortering och filter, Discord-status.
 
@@ -29,7 +30,6 @@ Ladda ner från [Releases](https://github.com/Willel09/better-liner/releases/lat
 |---|---|
 | Windows | `Echo_x.y.z_x64-setup.exe` (eller `.msi`) |
 | macOS (Apple Silicon + Intel) | `Echo_x.y.z_universal.dmg`. Dra Echo till Program. |
-| Linux | `.AppImage` eller `.deb` |
 
 Appen är inte kodsignerad (det kräver betalda certifikat från Apple och Microsoft), så första gången:
 - **macOS:** högerklicka på Echo i Program → Öppna → Öppna. Säger macOS att appen är "skadad", kör `xattr -cr /Applications/Echo.app` i Terminal.
@@ -51,7 +51,7 @@ pnpm dist         # bygg installationsfil för ditt OS
 
 Lägg sedan till nycklar under **Inställningar → Integrationer**:
 - **YouTube Data API v3:** gratis i Google Cloud Console. Ungefär 100 nya sökningar per dag ingår.
-- **AI:** en nyckel från Mistral (console.mistral.ai) eller DeepSeek (platform.deepseek.com). Fungerar också med andra OpenAI-kompatibla API:er.
+- **AI:** välj leverantör, klistra in nyckeln och tryck *Hämta modeller*. Lokala modeller (Ollama, LM Studio) behöver ingen nyckel.
 - **Spotify** (valfritt, för import): Client ID och Secret från developer.spotify.com.
 
 Nycklarna sparas i appens konfigurationsmapp och används bara av Rust-delen. Gränssnittet ser aldrig deras värden.
@@ -68,7 +68,7 @@ src/views/       de tio sidorna
 
 ## Releaser och uppdateringar
 
-- Höj `version` i `src-tauri/tauri.conf.json` och pusha, pusha en tagg (`v0.4.0`) eller kör **Release** under fliken Actions. GitHub bygger Mac (universal), Windows och Linux och lägger filerna i Releases.
+- Höj `version` i `src-tauri/tauri.conf.json` och pusha, pusha en tagg (`v0.4.0`) eller kör **Release** under fliken Actions. GitHub bygger Mac (universal) och Windows och lägger filerna i Releases.
 - I appen: **Inställningar → Om Echo → Sök efter uppdatering** laddar ner den nya versionen och startar om appen.
 - För att uppdateringsknappen ska fungera:
   1. Lägg den privata signeringsnyckeln som repo-hemligheten `TAURI_SIGNING_PRIVATE_KEY`. Den publika nyckeln finns redan i `src-tauri/tauri.conf.json`.

@@ -94,16 +94,12 @@ export function NowPlaying() {
   const [tab, setTab] = useState<'lyrics' | 'queue' | 'similar'>('lyrics')
   const sv = useSettings((s) => s.lang) === 'sv'
   if (!tr) return <div className="page"><Empty icon={<MusicNotes size={44} weight="duotone" />} text={t.nothingPlaying} /></div>
-  const isYt = tr.source === 'yt' || tr.source === 'ref'
   return (
     <>
       <div className="np-bg" aria-hidden><Visualizer art={tr.artwork} /></div>
       <div className="page np-page" style={{ position: 'relative' }}>
         <div className="np-left">
-          {/* YouTube's player is docked here while this page is open; local files show their cover. */}
-          <div className={'np-media' + (isYt ? '' : ' square')} data-video-slot={isYt ? 'big' : undefined}>
-            {!isYt && <Img src={tr.artwork} alt={tr.title} />}
-          </div>
+          <div className="np-media square"><Img src={tr.artwork} alt={tr.title} /></div>
           <div>
             <h1 className="h-hero" style={{ fontSize: 'clamp(28px, 3.2vw, 44px)', color: '#fff' }}>{tr.title}</h1>
             <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 17, marginTop: 4 }}>{tr.artist}</div>
@@ -113,9 +109,9 @@ export function NowPlaying() {
               {f?.bpm ? <span className="pill tabular">{Math.round(f.bpm)} BPM{f.by === 'local' ? ' ✓' : ''}</span> : null}
               {f?.energy !== undefined && <span className="pill tabular">⚡ {Math.round(f.energy * 100)}%</span>}
               {!f?.mood && <button className="chip" onClick={() => analyzeTracks([tr]).then(() => toast(t.analyzed), (e) => toast(errText(e, sv)))}><MagicWand size={13} /> {t.analyzeNow}</button>}
-              {tr.source === 'ytm'
-                ? <button className="chip" onClick={() => api.ytmOpen()}><YoutubeLogo size={13} /> {t.openYtm}</button>
-                : <button className="chip" onClick={() => startRadio(tr, sv)}><Broadcast size={13} /> {t.startRadio}</button>}
+              {tr.source !== 'local'
+                && <button className="chip" onClick={() => api.ytmOpen()}><YoutubeLogo size={13} /> {t.openYtm}</button>}
+              <button className="chip" onClick={() => startRadio(tr, sv)}><Broadcast size={13} /> {t.startRadio}</button>
             </div>
           </div>
           <div className="ctrl glass" style={{ borderRadius: 26, padding: '14px 16px 12px', '--glass': 'rgba(255,255,255,0.08)', '--text': '#fff', '--text-2': 'rgba(255,255,255,0.75)', '--text-3': 'rgba(255,255,255,0.6)', '--base': '#111', '--fill-hover': 'rgba(255,255,255,0.12)', '--fill-press': 'rgba(255,255,255,0.22)' } as React.CSSProperties}>

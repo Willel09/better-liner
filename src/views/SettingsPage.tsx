@@ -49,9 +49,16 @@ export function SettingsPage() {
   const today = new Date().toISOString().slice(0, 10)
   const searches = s.ytSearchesToday[1] === today ? s.ytSearchesToday[0] : 0
 
+  const [models, setModels] = useState<string[]>([])
   const preset = async (k: keyof typeof AI_PRESETS) => {
     set({ aiPreset: k })
-    if (k !== 'custom') { await api.configSet({ ai_base: AI_PRESETS[k].base, ai_model: AI_PRESETS[k].model }).catch(() => {}); refreshStatus() }
+    setModels([]); setTesting('')
+    const p = AI_PRESETS[k]
+    await api.configSet({ ai_base: p.base, ai_model: p.model, ai_protocol: p.protocol }).catch(() => {})
+    refreshStatus()
+  }
+  const fetchModels = async () => {
+    try { const m = await api.aiModels(); setModels(m); if (!m.length) toast(t.none) } catch (e) { toast(errText(e, sv)) }
   }
 
   return (
@@ -96,26 +103,32 @@ export function SettingsPage() {
       <div className="group">
         <Row label={t.ytm} hint={t.ytmHint}><button className="btn primary" onClick={() => api.ytmOpen()}>{t.openYtm}</button></Row>
         <Row label={`${t.ytKey} (${t.optional})`} hint={<>{t.ytKeyHint} <b className="tabular">{searches} {t.searchesToday}</b></>}><KeyField name="youtube_key" isSet={st.youtube} placeholder="AIza…" /></Row>
-        <Row label={t.aiProvider}>
-          <Seg value={s.aiPreset} options={(Object.keys(AI_PRESETS) as (keyof typeof AI_PRESETS)[]).map((k) => [k, AI_PRESETS[k].label] as const)} set={preset} />
+        <Row label={t.aiProvider} hint={t.connectAiHint}>
+          <select className="chip" style={{ height: 34, minWidth: 220 }} value={s.aiPreset} onChange={(e) => preset(e.target.value as keyof typeof AI_PRESETS)} aria-label={t.aiProvider}>
+            {(Object.keys(AI_PRESETS) as (keyof typeof AI_PRESETS)[]).map((k) => <option key={k} value={k}>{AI_PRESETS[k].label}</option>)}
+          </select>
         </Row>
-        <Row label={t.aiKey} hint={st.ai_base || undefined}><KeyField name="ai_key" isSet={st.ai} /></Row>
-        <Row label={t.aiModel}>
-          <form className="row-gap" style={{ flexWrap: 'nowrap' }} onSubmit={async (e) => {
-            e.preventDefault()
-            const f = new FormData(e.currentTarget)
-            await api.configSet({ ai_model: String(f.get('model') ?? ''), ...(s.aiPreset === 'custom' ? { ai_base: String(f.get('base') ?? '') } : {}) }).catch(() => {})
-            refreshStatus(); toast(t.keySaved)
-          }}>
-            {s.aiPreset === 'custom' && <label className="field" style={{ height: 34, width: 220 }}><input name="base" defaultValue={st.ai_base} placeholder="https://…/v1" aria-label="Base URL" /></label>}
-            <label className="field" style={{ height: 34, width: 190 }}><input name="model" defaultValue={st.ai_model} key={st.ai_model} aria-label={t.aiModel} /></label>
+        <Row label={t.aiKey} hint={st.ai_base.includes('localhost') ? t.localNoKey : undefined}><KeyField name="ai_key" isSet={st.ai && !st.ai_base.includes('localhost')} /></Row>
+        <form key={st.ai_base + st.ai_model} onSubmit={async (e) => {
+          e.preventDefault()
+          const f = new FormData(e.currentTarget)
+          await api.configSet({ ai_base: String(f.get('base') ?? ''), ai_model: String(f.get('model') ?? '') }).catch(() => {})
+          refreshStatus(); toast(t.keySaved)
+        }} style={{ display: 'flex', flexDirection: 'column' }}>
+          <Row label={t.baseUrl}>
+            <label className="field" style={{ height: 34, width: 320 }}><input name="base" defaultValue={st.ai_base} placeholder="https://…/v1" aria-label={t.baseUrl} /></label>
+          </Row>
+          <Row label={t.aiModel}>
+            <label className="field" style={{ height: 34, width: 240 }}><input name="model" list="ai-models" defaultValue={st.ai_model} aria-label={t.aiModel} /></label>
+            <datalist id="ai-models">{models.map((m) => <option key={m} value={m} />)}</datalist>
+            <button className="btn" style={{ height: 34 }} type="button" onClick={fetchModels}>{t.fetchModels}</button>
             <button className="btn" style={{ height: 34 }} type="submit">{t.save}</button>
             <button className="btn" style={{ height: 34 }} type="button" disabled={!st.ai || testing === 'busy'} onClick={async () => {
               setTesting('busy')
               try { await api.ai([{ role: 'user', content: 'Reply with OK.' }]); setTesting('ok') } catch (e) { setTesting(errText(e, sv)) }
             }}>{testing === 'ok' ? <><CheckCircle size={15} weight="fill" color="#34c759" />{t.works}</> : t.test}</button>
-          </form>
-        </Row>
+          </Row>
+        </form>
         {testing && testing !== 'ok' && testing !== 'busy' && <div><span className="hint" style={{ color: 'var(--accent)' }}>{testing}</span></div>}
         <Row label={t.spotifyKeys} hint={t.spotifyHint}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}><KeyField name="spotify_id" isSet={st.spotify} placeholder="Client ID" /><KeyField name="spotify_secret" isSet={st.spotify} placeholder="Client Secret" /></div>

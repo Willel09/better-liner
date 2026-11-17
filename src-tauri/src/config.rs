@@ -6,7 +6,8 @@ use std::{fs, path::PathBuf, sync::Mutex};
 #[serde(default)]
 pub struct Config {
     pub youtube_key: String,
-    pub ai_base: String,  // OpenAI-compatible base URL, e.g. https://api.mistral.ai/v1
+    pub ai_base: String,  // API base URL, e.g. https://api.openai.com/v1
+    pub ai_protocol: String, // "openai" (OpenAI-compatible) or "anthropic" (native Messages API)
     pub ai_key: String,
     pub ai_model: String,
     pub spotify_id: String,
@@ -20,6 +21,7 @@ pub struct Status {
     ai: bool,
     ai_base: String,
     ai_model: String,
+    ai_protocol: String,
     spotify: bool,
 }
 
@@ -58,9 +60,10 @@ pub fn config_status(store: tauri::State<Store>) -> Status {
     let c = store.get();
     Status {
         youtube: !c.youtube_key.is_empty(),
-        ai: !c.ai_key.is_empty() && !c.ai_base.is_empty(),
+        ai: !c.ai_base.is_empty() && (!c.ai_key.is_empty() || crate::ai::is_local(&c.ai_base)),
         ai_base: c.ai_base,
         ai_model: c.ai_model,
+        ai_protocol: c.ai_protocol,
         spotify: !c.spotify_id.is_empty() && !c.spotify_secret.is_empty(),
     }
 }

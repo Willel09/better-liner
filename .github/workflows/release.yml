@@ -1,6 +1,6 @@
 name: Release
 
-# Builds Echo for macOS, Windows and Linux and publishes a GitHub Release.
+# Builds Echo for macOS and Windows and publishes a GitHub Release.
 # Run it by pushing a tag like v0.3.0, or manually from the Actions tab.
 # For the in-app "Update app" button, add the repository secret TAURI_SIGNING_PRIVATE_KEY.
 # Only secrets and the fixed matrix below are used — no user-controlled event text.
@@ -25,17 +25,9 @@ jobs:
             args: --target universal-apple-darwin
           - platform: windows-latest
             args: ''
-          - platform: ubuntu-22.04
-            args: ''
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Linux dependencies
-        if: matrix.platform == 'ubuntu-22.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev librsvg2-dev libayatana-appindicator3-dev patchelf
 
       - uses: pnpm/action-setup@v4
         with:

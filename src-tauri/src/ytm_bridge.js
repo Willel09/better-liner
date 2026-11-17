@@ -10,6 +10,17 @@
   const click = (sel) => document.querySelector(sel)?.click()
   let last = ''
 
+  // Echo opened this song (…&echo=1): start it even if the window is in the background.
+  if (new URLSearchParams(location.search).get('echo') === '1') {
+    let tries = 0
+    const t = setInterval(() => {
+      const v = video()
+      if (v && !v.paused && v.currentTime > 0) return clearInterval(t)
+      if (v) v.play().catch(() => {})
+      if (++tries > 30) clearInterval(t)
+    }, 500)
+  }
+
   setInterval(() => {
     const md = navigator.mediaSession && navigator.mediaSession.metadata
     const v = video()

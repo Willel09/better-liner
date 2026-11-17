@@ -28,7 +28,8 @@
     "allow-local-scan",
     "allow-local-allow",
     "allow-analyze-file",
-    "allow-ytm-open"
+    "allow-ytm-open",
+    "allow-ai-models"
   ],
   "remote": {
     "urls": [

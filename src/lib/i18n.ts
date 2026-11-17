@@ -30,7 +30,7 @@ const sv = {
   djPrompt: 'Vilken stämning ska DJ:n bygga? T.ex. "fredagskväll som byggs upp"', startDj: 'Starta DJ', useLibrary: 'Använd mitt bibliotek',
   askPlaceholder: 'Fråga om din musik…', askExamples: ['Vad lyssnar jag mest på på kvällar?', 'Vilka artister liknar mina favoriter?', 'Beskriv min smak i tre meningar'],
   analyzeLibrary: 'Analysera biblioteket', analyzeHint: 'Klassar stämning, genre och tempo för låtar som saknar det. Lokala filer får exakt BPM från ljudet.',
-  analyzedCount: 'analyserade', needsAi: 'AI-funktionerna behöver en nyckel. Lägg till Mistral eller DeepSeek under Inställningar.',
+  analyzedCount: 'analyserade', needsAi: 'AI-funktionerna behöver en AI-leverantör. Välj en under Inställningar.',
   range7: '7 dagar', range30: '30 dagar', range365: 'År', rangeAll: 'Allt', listeningTime: 'Lyssningstid', tracksPlayed: 'Låtar', artistsPlayed: 'Artister',
   perDay: 'Minuter per dag', perHour: 'När på dygnet du lyssnar', topTracks: 'Topplåtar', topArtists: 'Toppartister', topGenres: 'Genrer', topMoods: 'Stämningar',
   dna: 'Music DNA', dnaHint: 'Din smak, räknad från vad du faktiskt spelar.', describeMe: 'Beskriv min smak', noStats: 'Spela lite musik så fylls statistiken på.',
@@ -52,7 +52,7 @@ const sv = {
   shortcuts: 'Kortkommandon', djVoice: 'Låt DJ:n prata', djVoiceHint: 'Läser upp DJ-texterna med datorns röst.',
   moods: { happy: 'glad', chill: 'lugn', sad: 'ledsen', energetic: 'energisk', dark: 'mörk', romantic: 'romantisk', focused: 'fokus', angry: 'arg', dreamy: 'drömsk', uplifting: 'upplyftande' },
   updates: 'Uppdatera appen', version: 'Version', checkUpdates: 'Sök efter uppdatering', upToDate: 'Du har senaste versionen', updateAvailable: 'Ny version:', installRestart: 'Installera och starta om', downloadingUpdate: 'Laddar ner…', updateFailed: 'Kunde inte söka efter uppdatering', about: 'Om Echo',
-  connectYt: 'Logga in på YouTube Music', connectYtHint: 'Logga in med ditt Google-konto direkt i Echo. Ingen API-nyckel behövs.', openYtm: 'Öppna YouTube Music', ytm: 'YouTube Music', ytmHint: 'Musiken spelas i YouTube Music-fönstret. Echo visar låten, lyrics och statistik och styr uppspelningen.', ytmSearchHint: 'Sökningen öppnas i YouTube Music', optional: 'valfritt', connectAi: 'Aktivera AI', connectAiHint: 'Mistral eller DeepSeek ger smarta spellistor, radio, DJ och mer.', openSettings: 'Öppna inställningar',
+  connectYt: 'Logga in på YouTube Music', connectYtHint: 'Logga in med ditt Google-konto direkt i Echo. Ingen API-nyckel behövs.', openYtm: 'Öppna YouTube Music', ytm: 'YouTube Music', ytmHint: 'Musiken spelas i YouTube Music-fönstret. Echo visar låten, lyrics och statistik och styr uppspelningen.', ytmSearchHint: 'Sökningen öppnas i YouTube Music', optional: 'valfritt', connectAi: 'Aktivera AI', connectAiHint: 'Koppla valfri AI (OpenAI, Claude, Gemini, Mistral, lokala modeller …) för smarta spellistor, radio och DJ.', fetchModels: 'Hämta modeller', baseUrl: 'Adress (base URL)', localNoKey: 'Lokala modeller behöver ingen nyckel.', openSettings: 'Öppna inställningar',
 }
 type Dict = typeof sv
 
@@ -86,7 +86,7 @@ const en: Dict = {
   djPrompt: 'What vibe should the DJ build? e.g. "Friday night that builds up"', startDj: 'Start DJ', useLibrary: 'Use my library',
   askPlaceholder: 'Ask about your music…', askExamples: ['What do I listen to most in the evenings?', 'Which artists are like my favorites?', 'Describe my taste in three sentences'],
   analyzeLibrary: 'Analyze library', analyzeHint: 'Classifies mood, genre and tempo for songs that lack it. Local files get exact BPM from the audio.',
-  analyzedCount: 'analyzed', needsAi: 'AI features need a key. Add Mistral or DeepSeek in Settings.',
+  analyzedCount: 'analyzed', needsAi: 'AI features need a provider. Pick one in Settings.',
   range7: '7 days', range30: '30 days', range365: 'Year', rangeAll: 'All', listeningTime: 'Listening time', tracksPlayed: 'Songs', artistsPlayed: 'Artists',
   perDay: 'Minutes per day', perHour: 'When you listen', topTracks: 'Top songs', topArtists: 'Top artists', topGenres: 'Genres', topMoods: 'Moods',
   dna: 'Music DNA', dnaHint: 'Your taste, computed from what you actually play.', describeMe: 'Describe my taste', noStats: 'Play some music and statistics will fill in.',
@@ -108,7 +108,7 @@ const en: Dict = {
   shortcuts: 'Shortcuts', djVoice: 'Let the DJ talk', djVoiceHint: 'Reads the DJ lines aloud with your computer’s voice.',
   moods: { happy: 'happy', chill: 'chill', sad: 'sad', energetic: 'energetic', dark: 'dark', romantic: 'romantic', focused: 'focused', angry: 'angry', dreamy: 'dreamy', uplifting: 'uplifting' },
   updates: 'Update app', version: 'Version', checkUpdates: 'Check for updates', upToDate: 'You have the latest version', updateAvailable: 'New version:', installRestart: 'Install and restart', downloadingUpdate: 'Downloading…', updateFailed: 'Couldn’t check for updates', about: 'About Echo',
-  connectYt: 'Sign in to YouTube Music', connectYtHint: 'Sign in with your Google account right inside Echo. No API key needed.', openYtm: 'Open YouTube Music', ytm: 'YouTube Music', ytmHint: 'Music plays in the YouTube Music window. Echo shows the song, lyrics and stats and controls playback.', ytmSearchHint: 'Search opens in YouTube Music', optional: 'optional', connectAi: 'Turn on AI', connectAiHint: 'Mistral or DeepSeek power smart playlists, radio, the DJ and more.', openSettings: 'Open settings',
+  connectYt: 'Sign in to YouTube Music', connectYtHint: 'Sign in with your Google account right inside Echo. No API key needed.', openYtm: 'Open YouTube Music', ytm: 'YouTube Music', ytmHint: 'Music plays in the YouTube Music window. Echo shows the song, lyrics and stats and controls playback.', ytmSearchHint: 'Search opens in YouTube Music', optional: 'optional', connectAi: 'Turn on AI', connectAiHint: 'Connect any AI (OpenAI, Claude, Gemini, Mistral, local models…) for smart playlists, radio and the DJ.', fetchModels: 'Fetch models', baseUrl: 'Base URL', localNoKey: 'Local models need no key.', openSettings: 'Open settings',
 }
 
 export const LANGS = { sv: 'Svenska', en: 'English' } as const

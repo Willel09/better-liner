@@ -1,10 +1,11 @@
-// Playback engine. Two slots (A/B) so the next song can start before the current one ends (crossfade).
-// Each slot plays either a YouTube video (official embedded player) or a local file (<audio> + Web Audio).
+// Playback engine.
+//  - Local files play in Echo: two <audio> slots (crossfade) through Web Audio (EQ, auto-gain, visuals).
+//  - Everything from YouTube plays in the YouTube Music window (official site, user's own account).
+//    Echo shows only the cover art; its queue, Smart Shuffle, radio and AI lists decide what plays there.
 import { api, emitTo, fileSrc, listen, ytmSearchUrl } from '../lib/api'
 import { bestMatch } from '../lib/match'
 import { smartShuffle } from '../lib/shuffle'
 import type { Track } from '../lib/types'
-import { YtDeck } from '../lib/ytplayer'
 import { create } from './create'
 import { library, playable, remember, useLibrary } from './library'
 import { countYtSearch, EQ_BANDS, useSettings } from './settings'
@@ -29,14 +30,33 @@ export const useYtm = create({ open: false, active: false })
 // When the YouTube Music window plays, Echo mirrors it (player bar, lyrics, stats, mini player)
 // and routes its transport buttons there. Starting playback in Echo hands control back.
 let ytmAt = 0, ytmPos = 0
+// "driving": Echo's queue picked the song now playing in YouTube Music (vs. mirroring what the user picked there).
+let driving = false, expected = '', previous = '', navAt = 0, lastRemaining = 99
 const ytm = (cmd: string, arg?: number) => emitTo('ytm', 'ytm:command', { cmd, arg })
 const ytmActive = () => useYtm.get().active
 type YtmState = { id: string; title: string; artist: string; album: string; artwork: string; playing: boolean; position: number; duration: number }
 listen<boolean>('ytm:open', (open) => useYtm.set(open ? { open } : { open, active: false }))
 listen<YtmState>('ytm:state', (s) => {
+  if (driving) {
+    // The old song can still report for a moment after Echo asked for the next one.
+    if (s.id && s.id === previous && performance.now() - navAt < 8000) return
+    if (s.id && expected && s.id !== expected) {
+      // YouTube Music moved on by itself at the end of a song: follow Echo's queue instead.
+      if (lastRemaining < 6) { lastRemaining = 99; next(true); return }
+      driving = false // the user picked something else in YouTube Music: mirror it below
+    } else {
+      if (s.playing) failures = 0
+      ytmAt = performance.now(); ytmPos = s.position
+      lastRemaining = s.duration ? s.duration - s.position : 99
+      usePlayer.set({ playing: s.playing, loading: false })
+      useTime.set({ position: s.position, duration: s.duration || useTime.get().duration, buffered: s.duration })
+      if (!s.playing && s.duration > 0 && s.duration - s.position < 1) { lastRemaining = 99; next(true) }
+      return
+    }
+  }
   if (s.playing && !ytmActive()) {
     // YouTube Music took over: silence Echo's own decks.
-    slots.forEach((x) => { x.audio.pause(); x.yt?.pause() })
+    slots.forEach((x) => x.audio.pause())
     useYtm.set({ active: true })
   }
   if (!ytmActive()) return
@@ -54,25 +74,17 @@ listen<YtmState>('ytm:state', (s) => {
 export const current = () => usePlayer.get().queue[usePlayer.get().index] ?? null
 
 // ---------- slots ----------
-type Kind = 'yt' | 'audio' | null
-type Slot = { host: HTMLDivElement; yt: YtDeck | null; audio: HTMLAudioElement; gain: GainNode | null; kind: Kind; trackId: string; fade: number }
-
-export const stage = document.createElement('div') // positioned over a placeholder by <VideoStage/>
-stage.className = 'video-stage'
-document.body.appendChild(stage)
+type Slot = { audio: HTMLAudioElement; gain: GainNode | null; kind: 'audio' | null; trackId: string; fade: number }
 
 let ctx: AudioContext | null = null
 let analyser: AnalyserNode | null = null
 let eqNodes: BiquadFilterNode[] = []
 
 function makeSlot(): Slot {
-  const host = document.createElement('div')
-  host.className = 'video-slot'
-  stage.appendChild(host)
   const audio = new Audio()
   audio.crossOrigin = 'anonymous'
   audio.preload = 'auto'
-  return { host, yt: null, audio, gain: null, kind: null, trackId: '', fade: 1 }
+  return { audio, gain: null, kind: null, trackId: '', fade: 1 }
 }
 const slots = [makeSlot(), makeSlot()]
 let active = 0
@@ -108,9 +120,7 @@ export const getAnalyser = () => (cur().kind === 'audio' ? analyser : null)
 
 const master = () => (usePlayer.get().muted ? 0 : useSettings.get().volume)
 function applyVolume(s: Slot) {
-  const v = master() * s.fade
-  if (s.kind === 'yt') s.yt?.setVolume(v)
-  else s.audio.volume = Math.max(0, Math.min(1, v))
+  s.audio.volume = Math.max(0, Math.min(1, master() * s.fade))
 }
 
 /** Auto-gain for local files: steer RMS loudness toward a common target. YouTube already normalizes. */
@@ -145,37 +155,43 @@ let loadSeq = 0
 let failures = 0 // consecutive playback failures
 async function loadInto(slot: Slot, t: Track, autoplay: boolean) {
   slot.trackId = t.id
-  if (t.source === 'local') {
-    audioGraph()
-    if (slot.kind === 'yt') slot.yt?.stop()
-    slot.kind = 'audio'
-    slot.audio.src = fileSrc(t.path!)
-    slot.gain!.gain.value = autoGain(t)
-    applyVolume(slot)
-    if (autoplay) { await ctx?.resume(); await slot.audio.play() }
-  } else {
-    const r = await resolveTrack(t)
-    if (slot.trackId !== t.id) return
-    slot.audio.pause()
-    slot.kind = 'yt'
-    slot.yt ??= new YtDeck(slot.host, ytEvents(slot))
-    await slot.yt.load(r.videoId!, 0, autoplay)
-    applyVolume(slot)
-  }
-  slot.host.dataset.kind = slot.kind ?? ''
+  audioGraph()
+  slot.kind = 'audio'
+  slot.audio.src = fileSrc(t.path!)
+  slot.gain!.gain.value = autoGain(t)
+  applyVolume(slot)
+  if (autoplay) { await ctx?.resume(); await slot.audio.play() }
+}
+
+/** Play a YouTube song in the YouTube Music window (it can stay minimized; Echo shows the cover). */
+async function playRemote(t: Track, seq: number) {
+  const r = await resolveTrack(t)
+  if (seq !== loadSeq) return
+  previous = expected; expected = r.videoId!; navAt = performance.now(); lastRemaining = 99
+  driving = true
+  useYtm.set({ active: true })
+  ytmPos = 0; ytmAt = performance.now()
+  await api.ytmOpen(`https://music.youtube.com/watch?v=${encodeURIComponent(r.videoId!)}&echo=1`, false)
+  if (useSettings.get().volume !== 1) setTimeout(() => ytm('volume', master()), 2500)
 }
 
 async function start(t: Track) {
-  if (ytmActive()) { ytm('pause'); useYtm.set({ active: false }) }
   const seq = ++loadSeq
   finishListen()
   const s = cur()
   s.fade = 1
-  slots.forEach((x, i) => { if (i !== active) { x.audio.pause(); x.yt?.pause() } })
   usePlayer.set({ loading: true, error: '' })
   useTime.set({ position: 0, duration: t.duration, buffered: 0 })
   try {
-    await loadInto(s, t, true)
+    if (t.source === 'local') {
+      if (ytmActive()) { ytm('pause'); useYtm.set({ active: false }) }
+      driving = false
+      slots.forEach((x, i) => { if (i !== active) x.audio.pause() })
+      await loadInto(s, t, true)
+    } else {
+      slots.forEach((x) => x.audio.pause())
+      await playRemote(t, seq)
+    }
     if (seq !== loadSeq) return
     begin(t)
   } catch (e) {
@@ -183,7 +199,8 @@ async function start(t: Track) {
     if (seq !== loadSeq) return
     // No YouTube API key: find the song in the YouTube Music window instead.
     if (String((e as Error).message ?? e).includes('youtube:nokey')) {
-      api.ytmOpen(ytmSearchUrl(`${t.artist} ${t.title}`.trim())).catch(() => {})
+      driving = false
+      api.ytmOpen(ytmSearchUrl(`${t.artist} ${t.title}`.trim()), true).catch(() => {})
       usePlayer.set({ loading: false, playing: false })
       return
     }
@@ -191,11 +208,8 @@ async function start(t: Track) {
     // Unplayable (no match / quota): move on rather than stall the queue.
     if ((e as Error).message === 'nomatch' && ++failures < 3) setTimeout(() => seq === loadSeq && next(true), 800)
   }
-  markActive()
   prefetchNext()
 }
-
-function markActive() { slots.forEach((x, i) => x.host.classList.toggle('on', i === active)) }
 
 // ---------- listening log (statistics, Music DNA) ----------
 let listened = 0, listenTrack: Track | null = null
@@ -218,22 +232,22 @@ export async function play() {
   if (ytmActive()) return ytm('play')
   const s = cur()
   if (s.kind === 'audio') { await ctx?.resume(); await s.audio.play().catch(() => {}) }
-  else if (s.kind === 'yt') s.yt?.play()
   else if (current()) start(current()!)
 }
-export function pause() { if (ytmActive()) return ytm('pause'); const s = cur(); s.kind === 'audio' ? s.audio.pause() : s.yt?.pause() }
+export function pause() { if (ytmActive()) return ytm('pause'); cur().audio.pause() }
 export const toggle = () => (usePlayer.get().playing ? pause() : play())
 export function seek(sec: number) {
   if (!Number.isFinite(sec)) return
   if (ytmActive()) { ytm('seek', Math.max(0, sec)); ytmPos = Math.max(0, sec); ytmAt = performance.now(); useTime.set({ position: ytmPos }); return }
   const s = cur()
   sec = Math.max(0, sec)
-  s.kind === 'audio' ? (s.audio.currentTime = sec) : s.yt?.seek(sec)
+  if (s.kind === 'audio') s.audio.currentTime = sec
   useTime.set({ position: sec })
 }
 export const now = () => {
   if (ytmActive()) return ytmPos + (usePlayer.get().playing ? (performance.now() - ytmAt) / 1000 : 0)
-  const s = cur(); return s.kind === 'audio' ? s.audio.currentTime : s.yt?.time() ?? 0 }
+  return cur().audio.currentTime
+}
 
 export function playQueue(tracks: Track[], startAt = 0) {
   const list = tracks.filter(playable)
@@ -253,7 +267,7 @@ export function playAt(i: number) {
   start(q[i])
 }
 export function next(auto = false) {
-  if (ytmActive()) return ytm('next')
+  if (ytmActive() && !driving) return ytm('next')
   const { index, queue, repeat, sleepAt } = usePlayer.get()
   if (auto && sleepAt === -1) { usePlayer.set({ sleepAt: 0 }); pause(); return }
   if (auto && repeat === 'one') { seek(0); play(); return }
@@ -262,7 +276,7 @@ export function next(auto = false) {
   pause()
 }
 export function prev() {
-  if (ytmActive()) return ytm('prev')
+  if (ytmActive() && !driving) return ytm('prev')
   if (now() > 3) return seek(0)
   const { index } = usePlayer.get()
   index > 0 ? playAt(index - 1) : seek(0)
@@ -271,9 +285,9 @@ export function setVolume(v: number) {
   useSettings.set({ volume: Math.max(0, Math.min(1, v)) })
   usePlayer.set({ muted: false })
   slots.forEach(applyVolume)
-  if (ytmActive()) ytm('volume', useSettings.get().volume)
+  if (ytmActive()) ytm('volume', master())
 }
-export function toggleMute() { usePlayer.set((s) => ({ muted: !s.muted })); slots.forEach(applyVolume) }
+export function toggleMute() { usePlayer.set((s) => ({ muted: !s.muted })); slots.forEach(applyVolume); if (ytmActive()) ytm('volume', master()) }
 
 function shuffled(ts: Track[]) {
   const s = useSettings.get(), lib = useLibrary.get()
@@ -345,7 +359,6 @@ async function crossfade() {
   active = 1 - active
   usePlayer.set({ index: ni })
   begin(t)
-  markActive()
   prefetchNext()
   const t0 = performance.now()
   const step = () => {
@@ -354,37 +367,12 @@ async function crossfade() {
     out.fade = Math.cos((k * Math.PI) / 2)
     applyVolume(inn); applyVolume(out)
     if (k < 1) requestAnimationFrame(step)
-    else { out.kind === 'audio' ? out.audio.pause() : out.yt?.pause(); fading = false }
+    else { out.audio.pause(); fading = false }
   }
   step()
 }
 
 // ---------- events ----------
-function ytEvents(slot: Slot) {
-  return {
-    onState(st: 'playing' | 'paused' | 'ended' | 'buffering') {
-      if (slot !== cur()) return
-      if (st === 'playing') { failures = 0; usePlayer.set({ playing: true, loading: false }) }
-      if (st === 'paused') usePlayer.set({ playing: false })
-      if (st === 'buffering') usePlayer.set({ loading: true })
-      if (st === 'ended' && !fading) next(true)
-    },
-    onError(code: number) {
-      console.warn('[echo] youtube player error', code)
-      if (slot !== cur()) return
-      const t = current()
-      // 100: removed, 101/150: owner blocked embedding → try the next best match once.
-      if (t?.videoId && [100, 101, 150].includes(code)) {
-        badVideos.add(t.videoId)
-        if (t.source === 'ref') { start(t); return }
-      }
-      usePlayer.set({ error: `youtube:${code}`, playing: false, loading: false })
-      // Skip unplayable songs, but stop after 3 failures in a row instead of racing through the queue.
-      if (++failures < 3) setTimeout(() => next(true), 1000)
-    },
-  }
-}
-
 slots.forEach((s) => {
   const mine = () => s === cur()
   s.audio.addEventListener('playing', () => mine() && usePlayer.set({ playing: true, loading: false }))
@@ -407,16 +395,16 @@ setInterval(() => {
     return
   }
   if (!s.kind) return
-  const pos = s.kind === 'audio' ? s.audio.currentTime : s.yt!.time()
-  const dur = (s.kind === 'audio' ? s.audio.duration : s.yt!.duration()) || useTime.get().duration
-  const buf = s.kind === 'audio' ? (s.audio.buffered.length ? s.audio.buffered.end(s.audio.buffered.length - 1) : 0) : s.yt!.buffered()
+  const pos = s.audio.currentTime
+  const dur = s.audio.duration || useTime.get().duration
+  const buf = s.audio.buffered.length ? s.audio.buffered.end(s.audio.buffered.length - 1) : 0
   useTime.set({ position: pos, duration: dur, buffered: buf })
   const { playing, sleepAt } = usePlayer.get()
   if (playing && dt < 2) listened += dt
   if (sleepAt > 0 && Date.now() >= sleepAt) { usePlayer.set({ sleepAt: 0 }); pause() }
   const cf = useSettings.get().crossfade
-  const sameAlbum = (() => { const q = usePlayer.get(); const a = q.queue[q.index], b = q.queue[q.index + 1]; return !!a?.album && a.album === b?.album })()
-  if (playing && cf > 0 && !fading && dur > cf * 3 && dur - pos <= cf && !sameAlbum) crossfade()
+  const { nextLocal, sameAlbum } = (() => { const q = usePlayer.get(); const a = q.queue[q.index], b = q.queue[q.index + 1]; return { nextLocal: b?.source === 'local', sameAlbum: !!a?.album && a.album === b?.album } })()
+  if (playing && cf > 0 && !fading && dur > cf * 3 && dur - pos <= cf && !sameAlbum && nextLocal) crossfade() // crossfade between local files
 }, 250)
 
 // ---------- OS media controls ----------

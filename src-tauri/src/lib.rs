@@ -135,7 +135,7 @@ pub fn run() {
             platform, mini_toggle, discord_update,
             config::config_status, config::config_set,
             db::cache_get, db::cache_set, db::play_log, db::stats,
-            youtube::yt_search, ai::ai_chat, import::import_playlist,
+            youtube::yt_search, ai::ai_chat, ai::ai_models, import::import_playlist,
             local::local_scan, local::local_allow, analysis::analyze_file,
             ytm::ytm_open, ytm::ytm_state,
         ])

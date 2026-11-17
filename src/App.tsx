@@ -4,7 +4,6 @@ import { PlayerBar } from './components/PlayerBar'
 import { Sidebar } from './components/Sidebar'
 import { TrackMenuHost } from './components/TrackMenu'
 import { PromptHost, Toast } from './components/ui'
-import { VideoStage } from './components/VideoStage'
 import { useT } from './lib/i18n'
 import { current, usePlayer } from './store/player'
 import { useRouter } from './store/router'
@@ -75,7 +74,6 @@ export function App() {
         </main>
         <PlayerBar />
       </div>
-      <VideoStage />
       <TrackMenuHost />
       <PromptHost />
       <Toast />
