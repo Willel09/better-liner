@@ -1,24 +1,15 @@
 import { useEffect, useState } from 'react'
 
-// Load async data keyed by deps; exposes loading/error/retry.
-export function useAsync<T>(fn: () => Promise<T>, deps: unknown[]) {
-  const [state, setState] = useState<{ data?: T; error?: unknown; loading: boolean }>({ loading: true })
+// Load async data keyed by deps; exposes loading/error/retry. Pass `enabled=false` to skip.
+export function useAsync<T>(fn: () => Promise<T>, deps: unknown[], enabled = true) {
+  const [state, setState] = useState<{ data?: T; error?: unknown; loading: boolean }>({ loading: enabled })
   const [nonce, setNonce] = useState(0)
   useEffect(() => {
+    if (!enabled) { setState({ loading: false }); return }
     let live = true
-    setState({ loading: true })
+    setState((s) => ({ data: s.data, loading: true }))
     fn().then((data) => live && setState({ data, loading: false }), (error) => live && setState({ error, loading: false }))
     return () => { live = false }
-  }, [...deps, nonce])
+  }, [...deps, nonce, enabled])
   return { ...state, retry: () => setNonce((n) => n + 1) }
-}
-
-export function useOnline() {
-  const [on, setOn] = useState(navigator.onLine)
-  useEffect(() => {
-    const up = () => setOn(true), down = () => setOn(false)
-    addEventListener('online', up); addEventListener('offline', down)
-    return () => { removeEventListener('online', up); removeEventListener('offline', down) }
-  }, [])
-  return on
 }

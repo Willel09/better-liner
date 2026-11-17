@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { getAnalyser, usePlayer } from '../store/player'
+import { current, getAnalyser, now, usePlayer } from '../store/player'
+import { useLibrary } from '../store/library'
 import { useSettings } from '../store/settings'
 
 // Reactive background: palette sampled from the artwork, drawn as slow-moving blurred blobs
@@ -43,10 +44,17 @@ export function Visualizer({ art }: { art: string | null }) {
     const draw = () => {
       const a = getAnalyser()
       let bass = 0
-      if (a && reactive && usePlayer.get().playing) {
-        a.getByteFrequencyData(bins)
-        for (let i = 1; i < 12; i++) bass += bins[i]
-        bass /= 11 * 255
+      if (reactive && usePlayer.get().playing) {
+        if (a) {
+          a.getByteFrequencyData(bins)
+          for (let i = 1; i < 12; i++) bass += bins[i]
+          bass /= 11 * 255
+        } else {
+          // YouTube audio can't be analysed (cross-origin player): pulse on the song's tempo instead.
+          const tr = current(), f = tr ? useLibrary.get().features[tr.id] : undefined
+          const beat = (now() * (f?.bpm ?? 108)) / 60
+          bass = (0.35 + (f?.energy ?? 0.5) * 0.45) * Math.pow(1 - (beat % 1), 3)
+        }
       }
       energy += (bass - energy) * 0.18
       const t = (performance.now() - t0) / 1000, W = cv.width, H = cv.height

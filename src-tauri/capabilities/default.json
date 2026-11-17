@@ -1,0 +1,22 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "windows": [
+    "main",
+    "mini"
+  ],
+  "permissions": [
+    "core:default",
+    "core:window:allow-start-dragging",
+    "core:window:allow-set-fullscreen",
+    "core:window:allow-close",
+    "core:event:default",
+    "dialog:allow-open"
+  ],
+  "remote": {
+    "urls": [
+      "http://localhost:47823/*",
+      "http://localhost:5199/*"
+    ]
+  }
+}
