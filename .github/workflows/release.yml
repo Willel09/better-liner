@@ -7,6 +7,9 @@ name: Release
 on:
   push:
     tags: ['v*']
+    # Bumping "version" in tauri.conf.json on the development branch publishes a new release.
+    branches: [claude/magical-bohr-673rz3]
+    paths: ['src-tauri/tauri.conf.json']
   workflow_dispatch:
 
 permissions:
@@ -66,6 +69,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: v__VERSION__
+          releaseCommitish: ${{ github.sha }}
           releaseName: Echo v__VERSION__
           releaseBody: Ladda ner installationsfilen för ditt system nedan. Har du redan Echo? Öppna Inställningar → Uppdatera appen.
           releaseDraft: false

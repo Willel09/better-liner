@@ -5,6 +5,7 @@ mod db;
 mod import;
 mod local;
 mod youtube;
+mod ytm;
 
 use discord_rich_presence::{activity, DiscordIpc, DiscordIpcClient};
 use std::sync::Mutex;
@@ -136,6 +137,7 @@ pub fn run() {
             db::cache_get, db::cache_set, db::play_log, db::stats,
             youtube::yt_search, ai::ai_chat, import::import_playlist,
             local::local_scan, local::local_allow, analysis::analyze_file,
+            ytm::ytm_open, ytm::ytm_state,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Echo");

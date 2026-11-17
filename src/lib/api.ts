@@ -1,6 +1,6 @@
 // Thin layer over the Rust backend. Outside Tauri (plain browser during UI work) calls fail softly.
 import { invoke as tauriInvoke, convertFileSrc } from '@tauri-apps/api/core'
-import { emit as tauriEmit, listen as tauriListen } from '@tauri-apps/api/event'
+import { emit as tauriEmit, emitTo as tauriEmitTo, listen as tauriListen } from '@tauri-apps/api/event'
 
 export const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
 
@@ -34,6 +34,7 @@ export const api = {
   playLog: (a: { trackId: string; title: string; artist: string; genre?: string; mood?: string; seconds: number }) => invoke<void>('play_log', a),
   stats: (days: number) => invoke<Stats>('stats', { days, tzOffsetMin: -new Date().getTimezoneOffset() }),
   miniToggle: () => invoke<boolean>('mini_toggle'),
+  ytmOpen: (url?: string) => invoke<void>('ytm_open', { url }),
   discord: (clientId: string, t?: { title: string; artist: string; start?: number; end?: number }) =>
     invoke<void>('discord_update', { clientId, title: t?.title, artist: t?.artist, start: t?.start, end: t?.end }).catch(() => {}),
 }
@@ -43,6 +44,10 @@ export const fileSrc = (path: string) => (isTauri ? convertFileSrc(path) : path)
 export function emit(event: string, payload?: unknown) {
   if (isTauri) tauriEmit(event, payload).catch(() => {})
 }
+export function emitTo(target: string, event: string, payload?: unknown) {
+  if (isTauri) tauriEmitTo(target, event, payload).catch(() => {})
+}
+export const ytmSearchUrl = (q: string) => 'https://music.youtube.com/search?q=' + encodeURIComponent(q)
 export function listen<T>(event: string, cb: (p: T) => void): () => void {
   if (!isTauri) return () => {}
   let off: (() => void) | null = null, dead = false

@@ -1,6 +1,6 @@
 // Playback engine. Two slots (A/B) so the next song can start before the current one ends (crossfade).
 // Each slot plays either a YouTube video (official embedded player) or a local file (<audio> + Web Audio).
-import { api, fileSrc } from '../lib/api'
+import { api, emitTo, fileSrc, listen, ytmSearchUrl } from '../lib/api'
 import { bestMatch } from '../lib/match'
 import { smartShuffle } from '../lib/shuffle'
 import type { Track } from '../lib/types'
@@ -23,6 +23,34 @@ export const usePlayer = create({
   radioBusy: false,
 })
 export const useTime = create({ position: 0, duration: 0, buffered: 0 })
+export const useYtm = create({ open: false, active: false })
+
+// ---------- YouTube Music window as a source ----------
+// When the YouTube Music window plays, Echo mirrors it (player bar, lyrics, stats, mini player)
+// and routes its transport buttons there. Starting playback in Echo hands control back.
+let ytmAt = 0, ytmPos = 0
+const ytm = (cmd: string, arg?: number) => emitTo('ytm', 'ytm:command', { cmd, arg })
+const ytmActive = () => useYtm.get().active
+type YtmState = { id: string; title: string; artist: string; album: string; artwork: string; playing: boolean; position: number; duration: number }
+listen<boolean>('ytm:open', (open) => useYtm.set(open ? { open } : { open, active: false }))
+listen<YtmState>('ytm:state', (s) => {
+  if (s.playing && !ytmActive()) {
+    // YouTube Music took over: silence Echo's own decks.
+    slots.forEach((x) => { x.audio.pause(); x.yt?.pause() })
+    useYtm.set({ active: true })
+  }
+  if (!ytmActive()) return
+  const id = 'ytm:' + (s.id || (s.artist + '|' + s.title).toLowerCase())
+  if (current()?.id !== id) {
+    finishListen()
+    const t: Track = { id, source: 'ytm', title: s.title, artist: s.artist, album: s.album || undefined, duration: Math.round(s.duration), artwork: s.artwork || null, videoId: s.id || undefined }
+    usePlayer.set({ queue: [t], original: [t], index: 0, error: '' })
+    begin(t)
+  }
+  ytmAt = performance.now(); ytmPos = s.position
+  usePlayer.set({ playing: s.playing, loading: false })
+  useTime.set({ position: s.position, duration: s.duration || useTime.get().duration, buffered: s.duration })
+})
 export const current = () => usePlayer.get().queue[usePlayer.get().index] ?? null
 
 // ---------- slots ----------
@@ -138,6 +166,7 @@ async function loadInto(slot: Slot, t: Track, autoplay: boolean) {
 }
 
 async function start(t: Track) {
+  if (ytmActive()) { ytm('pause'); useYtm.set({ active: false }) }
   const seq = ++loadSeq
   finishListen()
   const s = cur()
@@ -152,6 +181,12 @@ async function start(t: Track) {
   } catch (e) {
     console.warn('[echo] load failed', e)
     if (seq !== loadSeq) return
+    // No YouTube API key: find the song in the YouTube Music window instead.
+    if (String((e as Error).message ?? e).includes('youtube:nokey')) {
+      api.ytmOpen(ytmSearchUrl(`${t.artist} ${t.title}`.trim())).catch(() => {})
+      usePlayer.set({ loading: false, playing: false })
+      return
+    }
     usePlayer.set({ loading: false, playing: false, error: String((e as Error).message ?? e) })
     // Unplayable (no match / quota): move on rather than stall the queue.
     if ((e as Error).message === 'nomatch' && ++failures < 3) setTimeout(() => seq === loadSeq && next(true), 800)
@@ -180,21 +215,25 @@ addEventListener('beforeunload', finishListen)
 
 // ---------- transport ----------
 export async function play() {
+  if (ytmActive()) return ytm('play')
   const s = cur()
   if (s.kind === 'audio') { await ctx?.resume(); await s.audio.play().catch(() => {}) }
   else if (s.kind === 'yt') s.yt?.play()
   else if (current()) start(current()!)
 }
-export function pause() { const s = cur(); s.kind === 'audio' ? s.audio.pause() : s.yt?.pause() }
+export function pause() { if (ytmActive()) return ytm('pause'); const s = cur(); s.kind === 'audio' ? s.audio.pause() : s.yt?.pause() }
 export const toggle = () => (usePlayer.get().playing ? pause() : play())
 export function seek(sec: number) {
-  const s = cur()
   if (!Number.isFinite(sec)) return
+  if (ytmActive()) { ytm('seek', Math.max(0, sec)); ytmPos = Math.max(0, sec); ytmAt = performance.now(); useTime.set({ position: ytmPos }); return }
+  const s = cur()
   sec = Math.max(0, sec)
   s.kind === 'audio' ? (s.audio.currentTime = sec) : s.yt?.seek(sec)
   useTime.set({ position: sec })
 }
-export const now = () => { const s = cur(); return s.kind === 'audio' ? s.audio.currentTime : s.yt?.time() ?? 0 }
+export const now = () => {
+  if (ytmActive()) return ytmPos + (usePlayer.get().playing ? (performance.now() - ytmAt) / 1000 : 0)
+  const s = cur(); return s.kind === 'audio' ? s.audio.currentTime : s.yt?.time() ?? 0 }
 
 export function playQueue(tracks: Track[], startAt = 0) {
   const list = tracks.filter(playable)
@@ -214,6 +253,7 @@ export function playAt(i: number) {
   start(q[i])
 }
 export function next(auto = false) {
+  if (ytmActive()) return ytm('next')
   const { index, queue, repeat, sleepAt } = usePlayer.get()
   if (auto && sleepAt === -1) { usePlayer.set({ sleepAt: 0 }); pause(); return }
   if (auto && repeat === 'one') { seek(0); play(); return }
@@ -222,6 +262,7 @@ export function next(auto = false) {
   pause()
 }
 export function prev() {
+  if (ytmActive()) return ytm('prev')
   if (now() > 3) return seek(0)
   const { index } = usePlayer.get()
   index > 0 ? playAt(index - 1) : seek(0)
@@ -230,6 +271,7 @@ export function setVolume(v: number) {
   useSettings.set({ volume: Math.max(0, Math.min(1, v)) })
   usePlayer.set({ muted: false })
   slots.forEach(applyVolume)
+  if (ytmActive()) ytm('volume', useSettings.get().volume)
 }
 export function toggleMute() { usePlayer.set((s) => ({ muted: !s.muted })); slots.forEach(applyVolume) }
 
@@ -358,6 +400,12 @@ setInterval(() => {
   const s = cur(), nowMs = performance.now()
   const dt = (nowMs - lastTick) / 1000
   lastTick = nowMs
+  if (ytmActive()) {
+    const { playing, sleepAt } = usePlayer.get()
+    if (playing && dt < 2) listened += dt
+    if (sleepAt > 0 && Date.now() >= sleepAt) { usePlayer.set({ sleepAt: 0 }); pause() }
+    return
+  }
   if (!s.kind) return
   const pos = s.kind === 'audio' ? s.audio.currentTime : s.yt!.time()
   const dur = (s.kind === 'audio' ? s.audio.duration : s.yt!.duration()) || useTime.get().duration

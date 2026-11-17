@@ -52,7 +52,7 @@ const sv = {
   shortcuts: 'Kortkommandon', djVoice: 'Låt DJ:n prata', djVoiceHint: 'Läser upp DJ-texterna med datorns röst.',
   moods: { happy: 'glad', chill: 'lugn', sad: 'ledsen', energetic: 'energisk', dark: 'mörk', romantic: 'romantisk', focused: 'fokus', angry: 'arg', dreamy: 'drömsk', uplifting: 'upplyftande' },
   updates: 'Uppdatera appen', version: 'Version', checkUpdates: 'Sök efter uppdatering', upToDate: 'Du har senaste versionen', updateAvailable: 'Ny version:', installRestart: 'Installera och starta om', downloadingUpdate: 'Laddar ner…', updateFailed: 'Kunde inte söka efter uppdatering', about: 'Om Echo',
-  connectYt: 'Koppla YouTube Music', connectYtHint: 'Lägg till en YouTube API-nyckel för att söka och spela musik.', connectAi: 'Aktivera AI', connectAiHint: 'Mistral eller DeepSeek ger smarta spellistor, radio, DJ och mer.', openSettings: 'Öppna inställningar',
+  connectYt: 'Logga in på YouTube Music', connectYtHint: 'Logga in med ditt Google-konto direkt i Echo. Ingen API-nyckel behövs.', openYtm: 'Öppna YouTube Music', ytm: 'YouTube Music', ytmHint: 'Musiken spelas i YouTube Music-fönstret. Echo visar låten, lyrics och statistik och styr uppspelningen.', ytmSearchHint: 'Sökningen öppnas i YouTube Music', optional: 'valfritt', connectAi: 'Aktivera AI', connectAiHint: 'Mistral eller DeepSeek ger smarta spellistor, radio, DJ och mer.', openSettings: 'Öppna inställningar',
 }
 type Dict = typeof sv
 
@@ -108,7 +108,7 @@ const en: Dict = {
   shortcuts: 'Shortcuts', djVoice: 'Let the DJ talk', djVoiceHint: 'Reads the DJ lines aloud with your computer’s voice.',
   moods: { happy: 'happy', chill: 'chill', sad: 'sad', energetic: 'energetic', dark: 'dark', romantic: 'romantic', focused: 'focused', angry: 'angry', dreamy: 'dreamy', uplifting: 'uplifting' },
   updates: 'Update app', version: 'Version', checkUpdates: 'Check for updates', upToDate: 'You have the latest version', updateAvailable: 'New version:', installRestart: 'Install and restart', downloadingUpdate: 'Downloading…', updateFailed: 'Couldn’t check for updates', about: 'About Echo',
-  connectYt: 'Connect YouTube Music', connectYtHint: 'Add a YouTube API key to search and play music.', connectAi: 'Turn on AI', connectAiHint: 'Mistral or DeepSeek power smart playlists, radio, the DJ and more.', openSettings: 'Open settings',
+  connectYt: 'Sign in to YouTube Music', connectYtHint: 'Sign in with your Google account right inside Echo. No API key needed.', openYtm: 'Open YouTube Music', ytm: 'YouTube Music', ytmHint: 'Music plays in the YouTube Music window. Echo shows the song, lyrics and stats and controls playback.', ytmSearchHint: 'Search opens in YouTube Music', optional: 'optional', connectAi: 'Turn on AI', connectAiHint: 'Mistral or DeepSeek power smart playlists, radio, the DJ and more.', openSettings: 'Open settings',
 }
 
 export const LANGS = { sv: 'Svenska', en: 'English' } as const

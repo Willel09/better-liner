@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { TrackList } from '../components/TrackList'
 import { Empty, SkeletonRows } from '../components/ui'
 import { discover, similarTo } from '../lib/ai'
-import { api } from '../lib/api'
+import { api, isTauri, ytmSearchUrl } from '../lib/api'
 import { useT } from '../lib/i18n'
 import { searchYt } from '../lib/tracks'
 import { allTracks, useLibrary } from '../store/library'
@@ -19,23 +19,23 @@ export function Discover({ q: initial = '' }: { q?: string }) {
   const [q, setQ] = useState(initial)
   const [query, setQuery] = useState(initial)
   const [nonce, setNonce] = useState(0)
-  const results = useAsync(() => searchYt(query, 20), [query], !!query)
+  const results = useAsync(() => searchYt(query, 20), [query], !!query && st.youtube)
   const disc = useAsync(async () => discover(await api.stats(30).catch(() => null)), [nonce], st.ai)
   const why = useMemo(() => Object.fromEntries((disc.data?.picks ?? []).map((p) => [p.id, p.why ?? ''])), [disc.data])
 
   return (
     <div className="page">
       <div className="page-head"><h1 className="h-page">{t.discover}</h1></div>
-      <form className="field" style={{ height: 50, maxWidth: 620, marginBottom: 14 }} onSubmit={(e) => { e.preventDefault(); setQuery(q.trim()) }}>
+      <form className="field" style={{ height: 50, maxWidth: 620, marginBottom: 14 }} onSubmit={(e) => { e.preventDefault(); if (!st.youtube && isTauri && q.trim()) api.ytmOpen(ytmSearchUrl(q.trim())); else setQuery(q.trim()) }}>
         <MagnifyingGlass size={18} className="faint" />
         <input autoFocus={!!initial || undefined} value={q} onChange={(e) => setQ(e.target.value)} placeholder={t.searchPlaceholder} aria-label={t.search} />
-        <span className="faint" style={{ fontSize: 12 }}>{t.searchHint}</span>
+        <span className="faint" style={{ fontSize: 12 }}>{st.youtube ? t.searchHint : t.ytmSearchHint}</span>
       </form>
       <div className="row-gap" style={{ marginBottom: 24 }}>
-        {GENRES.map((g) => <button key={g} className="chip" aria-pressed={query === `${g} hits`} onClick={() => { setQ(`${g} hits`); setQuery(`${g} hits`) }}>{g}</button>)}
+        {GENRES.map((g) => <button key={g} className="chip" aria-pressed={query === `${g} hits`} onClick={() => { setQ(`${g} hits`); if (!st.youtube && isTauri) api.ytmOpen(ytmSearchUrl(`${g} hits`)); else setQuery(`${g} hits`) }}>{g}</button>)}
       </div>
 
-      {query && (
+      {query && st.youtube && (
         <section>
           <h2 className="h-sec" style={{ marginTop: 0 }}>{t.search}: “{query}”</h2>
           {results.loading ? <SkeletonRows /> : results.error ? <ErrorState error={results.error} retry={results.retry} />

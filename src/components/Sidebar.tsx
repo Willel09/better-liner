@@ -1,9 +1,10 @@
-import { Books, CaretLeft, CaretRight, ChartBar, Compass, Disc, GearSix, Heart, House, MicrophoneStage, MusicNotes, Playlist as PlaylistIcon, Sparkle, Waveform } from '@phosphor-icons/react'
+import { YoutubeLogo, Books, CaretLeft, CaretRight, ChartBar, Compass, Disc, GearSix, Heart, House, MicrophoneStage, MusicNotes, Playlist as PlaylistIcon, Sparkle, Waveform } from '@phosphor-icons/react'
 import type { ReactNode } from 'react'
+import { api, isTauri } from '../lib/api'
 import { useT } from '../lib/i18n'
 import type { Route } from '../lib/types'
 import { useLibrary } from '../store/library'
-import { current, usePlayer } from '../store/player'
+import { current, usePlayer, useYtm } from '../store/player'
 import { back, forward, navigate, useRouter } from '../store/router'
 import { useSettings } from '../store/settings'
 import { Img } from './ui'
@@ -22,6 +23,7 @@ export function Sidebar() {
   const priv = useSettings((s) => s.privateSession)
   usePlayer((s) => s.index)
   const np = current()
+  const ytmOpen = useYtm((s) => s.open)
   const ic = { size: 19 }
 
   return (
@@ -35,6 +37,7 @@ export function Sidebar() {
         <Item cur={cur} to={{ name: 'discover' }} icon={<Compass {...ic} />} label={t.discover} />
         <Item cur={cur} to={{ name: 'now' }} icon={<Waveform {...ic} />} label={t.now} />
         <Item cur={cur} to={{ name: 'studio' }} icon={<Sparkle {...ic} />} label={t.studio} />
+        {isTauri && <button className="side-item" aria-pressed={ytmOpen} onClick={() => api.ytmOpen()}><YoutubeLogo {...ic} weight={ytmOpen ? 'fill' : 'regular'} /><span>{t.ytm}</span></button>}
       </nav>
       <div className="side-label">{t.yourMusic}</div>
       <nav className="no-drag" aria-label={t.yourMusic}>
@@ -54,7 +57,7 @@ export function Sidebar() {
       {/* The YouTube player docks here (≥200×200, always visible while a YouTube track plays). */}
       {np && cur.name !== 'now' && (
         <div className="tile-slot no-drag" data-video-slot="tile" onClick={() => navigate({ name: 'now' })} role="button" aria-label={t.now} tabIndex={0}>
-          {np.source === 'local' && <Img src={np.artwork} alt={np.title} />}
+          {(np.source === 'local' || np.source === 'ytm') && <Img src={np.artwork} alt={np.title} />}
         </div>
       )}
       <div className="no-drag" style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 6 }}>

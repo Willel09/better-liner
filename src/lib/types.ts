@@ -2,7 +2,7 @@
 // references (title + artist only) and get a videoId the first time they are played.
 export type Track = {
   id: string
-  source: 'yt' | 'local' | 'ref'
+  source: 'yt' | 'local' | 'ref' | 'ytm' // ytm = playing in the YouTube Music window
   title: string
   artist: string
   album?: string

@@ -49,7 +49,7 @@ export function startBridge() {
   let radioFor = ''
   usePlayer.subscribe(async () => {
     const s = usePlayer.get(), t = current()
-    if (!t || !useSettings.get().smartRadio || s.repeat !== 'off' || s.radioBusy) return
+    if (!t || t.source === 'ytm' || !useSettings.get().smartRadio || s.repeat !== 'off' || s.radioBusy) return
     if (s.queue.length - s.index > 2 || radioFor === t.id) return
     radioFor = t.id
     usePlayer.set({ radioBusy: true })

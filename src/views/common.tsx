@@ -1,5 +1,7 @@
 import { ArrowCounterClockwise, Key, Play, Shuffle, Sparkle, WifiSlash, YoutubeLogo } from '@phosphor-icons/react'
 import type { ReactNode } from 'react'
+import { api, isTauri } from '../lib/api'
+import { useYtm } from '../store/player'
 import { Empty, Img } from '../components/ui'
 import { errText } from '../lib/api'
 import { useT } from '../lib/i18n'
@@ -51,14 +53,16 @@ export function CollectionHeader({ title, sub, art, kind, children }: { title: s
 export function ConnectCards() {
   const t = useT()
   const st = useStatus()
-  if (st.youtube && st.ai) return null
+  const ytmOpen = useYtm((s) => s.open)
+  const showYt = !st.youtube && !ytmOpen && isTauri
+  if (!showYt && st.ai) return null
   return (
     <div className="bento" style={{ marginBottom: 14 }}>
-      {!st.youtube && (
+      {showYt && (
         <div className="notice glass span-6">
           <div className="ico"><YoutubeLogo size={24} weight="fill" /></div>
           <div style={{ flex: 1 }}><b>{t.connectYt}</b><div className="muted" style={{ fontSize: 12.5 }}>{t.connectYtHint}</div></div>
-          <button className="btn primary" onClick={() => navigate({ name: 'settings' })}>{t.openSettings}</button>
+          <button className="btn primary" onClick={() => api.ytmOpen()}>{t.openYtm}</button>
         </div>
       )}
       {!st.ai && (

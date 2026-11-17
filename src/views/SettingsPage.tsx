@@ -94,7 +94,8 @@ export function SettingsPage() {
 
       <h2>{t.integrations}</h2>
       <div className="group">
-        <Row label={t.ytKey} hint={<>{t.ytKeyHint} <b className="tabular">{searches} {t.searchesToday}</b></>}><KeyField name="youtube_key" isSet={st.youtube} placeholder="AIza…" /></Row>
+        <Row label={t.ytm} hint={t.ytmHint}><button className="btn primary" onClick={() => api.ytmOpen()}>{t.openYtm}</button></Row>
+        <Row label={`${t.ytKey} (${t.optional})`} hint={<>{t.ytKeyHint} <b className="tabular">{searches} {t.searchesToday}</b></>}><KeyField name="youtube_key" isSet={st.youtube} placeholder="AIza…" /></Row>
         <Row label={t.aiProvider}>
           <Seg value={s.aiPreset} options={(Object.keys(AI_PRESETS) as (keyof typeof AI_PRESETS)[]).map((k) => [k, AI_PRESETS[k].label] as const)} set={preset} />
         </Row>

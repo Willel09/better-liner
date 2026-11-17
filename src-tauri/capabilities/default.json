@@ -2,8 +2,7 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "windows": [
-    "main",
-    "mini"
+    "main"
   ],
   "permissions": [
     "core:default",
@@ -13,7 +12,23 @@
     "core:event:default",
     "dialog:allow-open",
     "updater:default",
-    "process:allow-restart"
+    "process:allow-restart",
+    "allow-platform",
+    "allow-mini-toggle",
+    "allow-discord-update",
+    "allow-config-status",
+    "allow-config-set",
+    "allow-cache-get",
+    "allow-cache-set",
+    "allow-play-log",
+    "allow-stats",
+    "allow-yt-search",
+    "allow-ai-chat",
+    "allow-import-playlist",
+    "allow-local-scan",
+    "allow-local-allow",
+    "allow-analyze-file",
+    "allow-ytm-open"
   ],
   "remote": {
     "urls": [

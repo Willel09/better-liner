@@ -4,8 +4,8 @@ En musikspelare för desktop: Tauri (Rust) + React/TypeScript, Liquid Glass-desi
 
 ## Så fungerar den
 
-1. **Sök** på YouTube via det officiella YouTube Data API (din egen nyckel).
-2. **Spela** via YouTubes officiella inbäddade spelare, styrd av Echos egen spelarmotor: kö, crossfade, Smart Shuffle, miniplayer. Spelaren syns som ett videokort i sidomenyn, och stort på Spelas nu, eftersom YouTubes villkor kräver att den är synlig.
+1. **YouTube Music, ingen nyckel:** klicka på *YouTube Music* i sidomenyn och logga in med ditt Google-konto. Den riktiga music.youtube.com öppnas i ett Echo-fönster. Det som spelas där syns i Echos spelarfält, Spelas nu (med lyrics), statistiken, miniplayern och Discord, och Echos knappar styr det.
+2. **Valfritt: YouTube Data API-nyckel.** Med en nyckel kan Echo även söka och spela YouTube i sin egen spelarmotor, med crossfade, Smart Shuffle, Smart Radio och AI-köer.
 3. **Lyrics** hämtas från LRCLIB, rad- och ordsynkade.
 4. **Importera** spellistor från Spotify och Deezer via länk, eller från Apple Music, SoundCloud m.fl. genom att klistra in låtlistan som text. Låtarna sparas som titel + artist och matchas mot YouTube först när de ska spelas, så en import kostar ingen API-kvot.
 5. **Lokala filer** spelas där de ligger. Rust räknar ut exakt BPM och ljudstyrka från ljudet.
@@ -21,7 +21,23 @@ En musikspelare för desktop: Tauri (Rust) + React/TypeScript, Liquid Glass-desi
 - **Sidor:** Hem, Upptäck, Bibliotek, Spellistor (vanliga, smarta och AI-skapade), Artister, Album, Spelas nu, AI Studio, Statistik och Inställningar.
 - **Spotify-liknande extrafunktioner:** insomningstimer, equalizer (lokala filer), "Dölj låt", "Spela inte artisten", privat lyssning, Daily Mix och stämningsmixar, sortering och filter, Discord-status.
 
-## Kom igång
+## Installera
+
+Ladda ner från [Releases](https://github.com/Willel09/better-liner/releases/latest):
+
+| System | Fil |
+|---|---|
+| Windows | `Echo_x.y.z_x64-setup.exe` (eller `.msi`) |
+| macOS (Apple Silicon + Intel) | `Echo_x.y.z_universal.dmg`. Dra Echo till Program. |
+| Linux | `.AppImage` eller `.deb` |
+
+Appen är inte kodsignerad (det kräver betalda certifikat från Apple och Microsoft), så första gången:
+- **macOS:** högerklicka på Echo i Program → Öppna → Öppna. Säger macOS att appen är "skadad", kör `xattr -cr /Applications/Echo.app` i Terminal.
+- **Windows:** klicka *Mer information → Kör ändå* i SmartScreen-rutan.
+
+Därefter uppdaterar du via **Inställningar → Om Echo → Sök efter uppdatering**.
+
+## Bygga själv
 
 Kräver Rust, Node 22+ och pnpm (på Linux även `libwebkit2gtk-4.1-dev`).
 
@@ -52,8 +68,7 @@ src/views/       de tio sidorna
 
 ## Releaser och uppdateringar
 
-- Pusha en tagg (`git tag v0.3.0 && git push origin v0.3.0`) eller kör **Release** under fliken Actions. GitHub bygger Mac (universal), Windows och Linux och lägger filerna i Releases.
+- Höj `version` i `src-tauri/tauri.conf.json` och pusha, pusha en tagg (`v0.4.0`) eller kör **Release** under fliken Actions. GitHub bygger Mac (universal), Windows och Linux och lägger filerna i Releases.
 - I appen: **Inställningar → Om Echo → Sök efter uppdatering** laddar ner den nya versionen och startar om appen.
 - För att uppdateringsknappen ska fungera:
   1. Lägg den privata signeringsnyckeln som repo-hemligheten `TAURI_SIGNING_PRIVATE_KEY`. Den publika nyckeln finns redan i `src-tauri/tauri.conf.json`.
-  2. Filerna i Releases måste gå att ladda ner utan inloggning, alltså ett publikt repo eller ett separat publikt repo för releaser.

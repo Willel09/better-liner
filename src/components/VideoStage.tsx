@@ -9,7 +9,7 @@ export function VideoStage() {
     const tick = () => {
       const slot = document.querySelector<HTMLElement>('[data-video-slot="big"]') ?? document.querySelector<HTMLElement>('[data-video-slot="tile"]')
       const t = current()
-      const show = !!slot && !!t && t.source !== 'local'
+      const show = !!slot && !!t && (t.source === 'yt' || t.source === 'ref')
       stage.classList.toggle('hidden', !show)
       if (slot && show) {
         const r = slot.getBoundingClientRect()

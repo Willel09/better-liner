@@ -1,4 +1,4 @@
-import { Broadcast, DotsThree, MagicWand, Microphone, MusicNotes, Queue as QueueIcon, Sparkle, X } from '@phosphor-icons/react'
+import { YoutubeLogo, Broadcast, DotsThree, MagicWand, Microphone, MusicNotes, Queue as QueueIcon, Sparkle, X } from '@phosphor-icons/react'
 import { useEffect, useMemo, useState } from 'react'
 import { Lyrics } from '../components/Lyrics'
 import { Progress, Transport, Volume } from '../components/PlayerBar'
@@ -7,7 +7,7 @@ import { openTrackMenu, startRadio } from '../components/TrackMenu'
 import { Empty, fmt, Img, SkeletonRows, toast } from '../components/ui'
 import { Visualizer } from '../components/Visualizer'
 import { analyzeTracks, similarTo } from '../lib/ai'
-import { errText } from '../lib/api'
+import { api, errText } from '../lib/api'
 import { useT } from '../lib/i18n'
 import { create } from '../store/create'
 import { useLibrary } from '../store/library'
@@ -94,7 +94,7 @@ export function NowPlaying() {
   const [tab, setTab] = useState<'lyrics' | 'queue' | 'similar'>('lyrics')
   const sv = useSettings((s) => s.lang) === 'sv'
   if (!tr) return <div className="page"><Empty icon={<MusicNotes size={44} weight="duotone" />} text={t.nothingPlaying} /></div>
-  const isYt = tr.source !== 'local'
+  const isYt = tr.source === 'yt' || tr.source === 'ref'
   return (
     <>
       <div className="np-bg" aria-hidden><Visualizer art={tr.artwork} /></div>
@@ -113,7 +113,9 @@ export function NowPlaying() {
               {f?.bpm ? <span className="pill tabular">{Math.round(f.bpm)} BPM{f.by === 'local' ? ' ✓' : ''}</span> : null}
               {f?.energy !== undefined && <span className="pill tabular">⚡ {Math.round(f.energy * 100)}%</span>}
               {!f?.mood && <button className="chip" onClick={() => analyzeTracks([tr]).then(() => toast(t.analyzed), (e) => toast(errText(e, sv)))}><MagicWand size={13} /> {t.analyzeNow}</button>}
-              <button className="chip" onClick={() => startRadio(tr, sv)}><Broadcast size={13} /> {t.startRadio}</button>
+              {tr.source === 'ytm'
+                ? <button className="chip" onClick={() => api.ytmOpen()}><YoutubeLogo size={13} /> {t.openYtm}</button>
+                : <button className="chip" onClick={() => startRadio(tr, sv)}><Broadcast size={13} /> {t.startRadio}</button>}
             </div>
           </div>
           <div className="ctrl glass" style={{ borderRadius: 26, padding: '14px 16px 12px', '--glass': 'rgba(255,255,255,0.08)', '--text': '#fff', '--text-2': 'rgba(255,255,255,0.75)', '--text-3': 'rgba(255,255,255,0.6)', '--base': '#111', '--fill-hover': 'rgba(255,255,255,0.12)', '--fill-press': 'rgba(255,255,255,0.22)' } as React.CSSProperties}>
