@@ -19,7 +19,7 @@ function Seg<T extends string | number>({ value, options, set }: { value: T; opt
 }
 
 const Row = ({ label, hint, children }: { label: string; hint?: ReactNode; children: ReactNode }) =>
-  <div><div style={{ minWidth: 0 }}><div style={{ fontWeight: 550 }}>{label}</div>{hint && <div className="hint">{hint}</div>}</div><div className="row-gap" style={{ flexWrap: 'nowrap' }}>{children}</div></div>
+  <div><div style={{ minWidth: 0, flex: 1 }}><div style={{ fontWeight: 550 }}>{label}</div>{hint && <div className="hint">{hint}</div>}</div><div className="row-gap" style={{ flexWrap: 'nowrap' }}>{children}</div></div>
 
 /** Write-only secret field: shows whether a key is set, never its value. */
 function KeyField({ name, isSet, placeholder }: { name: string; isSet: boolean; placeholder?: string }) {
@@ -75,15 +75,15 @@ export function SettingsPage() {
           <span className="tabular" style={{ width: 40, textAlign: 'right' }}>{s.crossfade ? `${s.crossfade} s` : t.sleepOff}</span>
         </Row>
         <Row label={t.autoGain} hint={t.autoGainHint}><Switch label={t.autoGain} on={s.autoGain} set={(autoGain) => set({ autoGain })} /></Row>
-        <Row label={t.equalizer} hint={t.eqHint}>
-          <Seg value={Object.entries(EQ_PRESETS).find(([, v]) => v.join() === s.eq.join())?.[0] ?? ''} options={Object.keys(EQ_PRESETS).map((k) => [k, k] as const)} set={(k) => set({ eq: EQ_PRESETS[k] })} />
-        </Row>
-        <div style={{ justifyContent: 'center' }}>
-          <div className="eq">{EQ_BANDS.map((f, i) => (
+        <div className="eq-block">
+          <Row label={t.equalizer} hint={t.eqHint}>
+            <Seg value={Object.entries(EQ_PRESETS).find(([, v]) => v.join() === s.eq.join())?.[0] ?? ''} options={Object.keys(EQ_PRESETS).map((k) => [k, k] as const)} set={(k) => set({ eq: EQ_PRESETS[k] })} />
+          </Row>
+          <div className="eq-bands">{EQ_BANDS.map((f, i) => (
             <label key={f} className="eq-band">
               <span className="tabular">{s.eq[i] > 0 ? '+' : ''}{s.eq[i]} dB</span>
-              <input type="range" min={-12} max={12} step={1} value={s.eq[i]} onChange={(e) => set({ eq: s.eq.map((x, j) => (j === i ? +e.target.value : x)) })} aria-label={`${f} Hz`} />
-              <span>{f >= 1000 ? `${f / 1000}k` : f}</span>
+              <input className="range" type="range" min={-12} max={12} step={1} value={s.eq[i]} onChange={(e) => set({ eq: s.eq.map((x, j) => (j === i ? +e.target.value : x)) })} aria-label={`${f} Hz`} />
+              <span>{f >= 1000 ? `${f / 1000}k` : f} Hz</span>
             </label>
           ))}</div>
         </div>

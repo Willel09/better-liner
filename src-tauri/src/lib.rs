@@ -42,7 +42,7 @@ fn discord_update(state: tauri::State<Discord>, client_id: String, title: Option
 }
 
 #[tauri::command]
-fn mini_toggle(app: tauri::AppHandle) -> Result<bool, String> {
+async fn mini_toggle(app: tauri::AppHandle) -> Result<bool, String> {
     if let Some(w) = app.get_webview_window("mini") {
         w.close().map_err(|e| e.to_string())?;
         let _ = app.emit("mini:open", false);

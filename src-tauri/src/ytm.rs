@@ -34,8 +34,9 @@ fn user_agent() -> Option<&'static str> {
 }
 
 /// Open (or focus) the YouTube Music window, optionally at a music.youtube.com URL such as a search.
+/// Async on purpose: creating a window from a sync command deadlocks on Windows (wry#583).
 #[tauri::command]
-pub fn ytm_open(app: AppHandle, url: Option<String>, focus: Option<bool>) -> Result<(), String> {
+pub async fn ytm_open(app: AppHandle, url: Option<String>, focus: Option<bool>) -> Result<(), String> {
     let target = url.filter(|u| u.starts_with(HOME)).unwrap_or_else(|| HOME.into());
     let parsed: tauri::Url = target.parse().map_err(|_| "bad url".to_string())?;
     if let Some(w) = app.get_webview_window("ytm") {
