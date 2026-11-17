@@ -36,7 +36,7 @@ export const useSettings = create({
   discordId: '',
   aiPreset: 'mistral' as keyof typeof AI_PRESETS,
   ytSearchesToday: [0, ''] as [number, string], // quota estimate: [count, yyyy-mm-dd]
-}, 'lumen.settings')
+}, 'echo.settings')
 
 export function countYtSearch() {
   const today = new Date().toISOString().slice(0, 10)

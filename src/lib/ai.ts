@@ -152,7 +152,7 @@ export async function assistant(history: Msg[], stats: Stats | null, nowPlaying:
     `Sample of library: ${lib.slice(0, 80).map((t) => `${t.artist} – ${t.title}`).join('; ')}`,
   ].join('\n')
   return api.ai([
-    { role: 'system', content: `You are Lumen's listening assistant. Answer questions about the user's music, taste and listening habits using the context. Be concise and specific. Use ${lang()}. When recommending songs, list them as "Artist – Title".\n\nContext:\n${context}` },
+    { role: 'system', content: `You are Echo's listening assistant. Answer questions about the user's music, taste and listening habits using the context. Be concise and specific. Use ${lang()}. When recommending songs, list them as "Artist – Title".\n\nContext:\n${context}` },
     ...history.slice(-12),
   ])
 }

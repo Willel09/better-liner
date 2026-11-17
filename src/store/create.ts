@@ -4,7 +4,8 @@ import { useSyncExternalStore } from 'react'
 export function create<S extends object>(init: S, persistKey?: string) {
   let state = init
   if (persistKey) {
-    try { state = { ...init, ...JSON.parse(localStorage.getItem(persistKey) ?? '{}') } } catch { /* corrupt or unavailable storage: start fresh */ }
+    // Fall back to the pre-rename key ("lumen.*") once, so existing libraries carry over.
+    try { state = { ...init, ...JSON.parse(localStorage.getItem(persistKey) ?? localStorage.getItem(persistKey.replace(/^echo\./, 'lumen.')) ?? '{}') } } catch { /* corrupt or unavailable storage: start fresh */ }
   }
   const subs = new Set<() => void>()
   const get = () => state

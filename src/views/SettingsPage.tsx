@@ -1,6 +1,7 @@
 import { CheckCircle, FolderPlus, XCircle } from '@phosphor-icons/react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { toast } from '../components/ui'
+import { UpdateCard } from '../components/UpdateCard'
 import { api, errText } from '../lib/api'
 import { LANGS, useT } from '../lib/i18n'
 import { SHORTCUTS } from '../store/bridge'
@@ -56,6 +57,9 @@ export function SettingsPage() {
   return (
     <div className="page settings-page">
       <div className="page-head"><h1 className="h-page">{t.settings}</h1></div>
+
+      <h2>{t.about}</h2>
+      <div className="group"><UpdateCard /></div>
 
       <h2>{t.sound}</h2>
       <div className="group">
@@ -151,7 +155,7 @@ export function SettingsPage() {
 
       <h2>{t.shortcuts}</h2>
       <div className="group">{SHORTCUTS.map(([k, a, b]) => <Row key={k} label={sv ? a : b}><kbd>{k}</kbd></Row>)}</div>
-      <p className="faint" style={{ fontSize: 12, marginTop: 24 }}>Lumen · YouTube Data API & IFrame Player · LRCLIB · Mistral / DeepSeek</p>
+      <p className="faint" style={{ fontSize: 12, marginTop: 24 }}>Echo · YouTube Data API & IFrame Player · LRCLIB · Mistral / DeepSeek</p>
     </div>
   )
 }

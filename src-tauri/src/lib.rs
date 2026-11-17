@@ -48,7 +48,7 @@ fn mini_toggle(app: tauri::AppHandle) -> Result<bool, String> {
         return Ok(false);
     }
     let w = WebviewWindowBuilder::new(&app, "mini", app_url("index.html#mini"))
-        .title("Lumen Mini")
+        .title("Echo Mini")
         .inner_size(400.0, 132.0)
         .resizable(false)
         .decorations(false)
@@ -107,15 +107,17 @@ pub fn run() {
     }
     builder
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .manage(Discord::default())
         .setup(|app| {
             let data = app.path().app_data_dir()?;
             std::fs::create_dir_all(&data)?;
-            app.manage(db::Db::open(&data.join("lumen.db"))?);
+            app.manage(db::Db::open(&data.join("echo.db"))?);
             app.manage(config::Store::load(app.path().app_config_dir()?));
             #[allow(unused_mut)]
             let mut wb = WebviewWindowBuilder::new(app, "main", app_url("index.html"))
-                .title("Lumen")
+                .title("Echo")
                 .inner_size(1360.0, 860.0)
                 .min_inner_size(1000.0, 660.0)
                 .transparent(true);
@@ -136,5 +138,5 @@ pub fn run() {
             local::local_scan, local::local_allow, analysis::analyze_file,
         ])
         .run(tauri::generate_context!())
-        .expect("error while running Lumen");
+        .expect("error while running Echo");
 }

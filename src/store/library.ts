@@ -14,7 +14,7 @@ export const useLibrary = create({
   hidden: [] as string[], // "hide this song"
   banned: [] as string[], // "don't play this artist" (lowercase)
   plays: {} as Record<string, number>,
-}, 'lumen.library')
+}, 'echo.library')
 
 const set = useLibrary.set
 export const remember = (ts: Track[]) => set((s) => ({ tracks: { ...s.tracks, ...Object.fromEntries(ts.map((t) => [t.id, { ...s.tracks[t.id], ...t }])) } }))

@@ -150,7 +150,7 @@ async function start(t: Track) {
     if (seq !== loadSeq) return
     begin(t)
   } catch (e) {
-    console.warn('[lumen] load failed', e)
+    console.warn('[echo] load failed', e)
     if (seq !== loadSeq) return
     usePlayer.set({ loading: false, playing: false, error: String((e as Error).message ?? e) })
     // Unplayable (no match / quota): move on rather than stall the queue.
@@ -328,7 +328,7 @@ function ytEvents(slot: Slot) {
       if (st === 'ended' && !fading) next(true)
     },
     onError(code: number) {
-      console.warn('[lumen] youtube player error', code)
+      console.warn('[echo] youtube player error', code)
       if (slot !== cur()) return
       const t = current()
       // 100: removed, 101/150: owner blocked embedding → try the next best match once.

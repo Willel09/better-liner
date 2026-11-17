@@ -1,11 +1,11 @@
-# Lumen
+# Echo
 
 En musikspelare för desktop: Tauri (Rust) + React/TypeScript, Liquid Glass-design, AI-funktioner via Mistral eller DeepSeek.
 
 ## Så fungerar den
 
 1. **Sök** på YouTube via det officiella YouTube Data API (din egen nyckel).
-2. **Spela** via YouTubes officiella inbäddade spelare, styrd av Lumens egen spelarmotor: kö, crossfade, Smart Shuffle, miniplayer. Spelaren syns som ett videokort i sidomenyn, och stort på Spelas nu, eftersom YouTubes villkor kräver att den är synlig.
+2. **Spela** via YouTubes officiella inbäddade spelare, styrd av Echos egen spelarmotor: kö, crossfade, Smart Shuffle, miniplayer. Spelaren syns som ett videokort i sidomenyn, och stort på Spelas nu, eftersom YouTubes villkor kräver att den är synlig.
 3. **Lyrics** hämtas från LRCLIB, rad- och ordsynkade.
 4. **Importera** spellistor från Spotify och Deezer via länk, eller från Apple Music, SoundCloud m.fl. genom att klistra in låtlistan som text. Låtarna sparas som titel + artist och matchas mot YouTube först när de ska spelas, så en import kostar ingen API-kvot.
 5. **Lokala filer** spelas där de ligger. Rust räknar ut exakt BPM och ljudstyrka från ljudet.
@@ -49,3 +49,11 @@ src/lib/         api-lager, matchning, Smart Shuffle, AI-funktioner, LRC-parser,
 src/store/       spelarmotor (två spår för crossfade), bibliotek, inställningar
 src/views/       de tio sidorna
 ```
+
+## Releaser och uppdateringar
+
+- Pusha en tagg (`git tag v0.3.0 && git push origin v0.3.0`) eller kör **Release** under fliken Actions. GitHub bygger Mac (universal), Windows och Linux och lägger filerna i Releases.
+- I appen: **Inställningar → Om Echo → Sök efter uppdatering** laddar ner den nya versionen och startar om appen.
+- För att uppdateringsknappen ska fungera:
+  1. Lägg den privata signeringsnyckeln som repo-hemligheten `TAURI_SIGNING_PRIVATE_KEY`. Den publika nyckeln finns redan i `src-tauri/tauri.conf.json`.
+  2. Filerna i Releases måste gå att ladda ner utan inloggning, alltså ett publikt repo eller ett separat publikt repo för releaser.

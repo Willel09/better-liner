@@ -1,7 +1,6 @@
 import { ClockCounterClockwise, Play } from '@phosphor-icons/react'
 import { useMemo } from 'react'
 import { Card, Img } from '../components/ui'
-import { api } from '../lib/api'
 import { useT } from '../lib/i18n'
 import { smartShuffle } from '../lib/shuffle'
 import type { Track } from '../lib/types'
@@ -9,7 +8,6 @@ import { allTracks, resolve, useLibrary } from '../store/library'
 import { playQueue } from '../store/player'
 import { navigate } from '../store/router'
 import { ConnectCards } from './common'
-import { useAsync } from './hooks'
 
 export type Mix = { id: string; name: string; sub: string; tracks: Track[] }
 
@@ -55,7 +53,6 @@ export function Home() {
   const tracks = useLibrary((s) => s.tracks)
   const recent = useMemo(() => resolve(history.slice(0, 14)), [history])
   const mixes = useMixes()
-  const week = useAsync(() => api.stats(7), [])
   const hour = new Date().getHours()
   const greet = hour < 11 ? t.morning : hour < 18 ? t.afternoon : t.evening
   const last = recent[0]
@@ -65,7 +62,7 @@ export function Home() {
       <div className="page-head"><h1 className="h-page" style={{ fontSize: 34 }}>{greet}</h1></div>
       <ConnectCards />
       <div className="bento">
-        <section className="tile glass span-8" style={{ minHeight: 230, padding: 0 }}>
+        <section className="tile glass span-12" style={{ minHeight: 250, padding: 0 }}>
           {last ? <>
             {last.artwork && <img src={last.artwork} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(36px) saturate(150%)', opacity: 0.55, transform: 'scale(1.2)' }} />}
             <div style={{ position: 'relative', display: 'flex', gap: 22, padding: 22, alignItems: 'center', height: '100%' }}>
@@ -78,19 +75,6 @@ export function Home() {
               </div>
             </div>
           </> : <div style={{ padding: 22 }}><div className="eyebrow">{t.recent}</div><p className="muted">{t.libraryEmpty}</p><button className="btn primary" onClick={() => navigate({ name: 'discover' })}>{t.discover}</button></div>}
-        </section>
-        <section className="tile glass span-4" aria-label={t.thisWeek}>
-          <div className="eyebrow">{t.thisWeek}</div>
-          <div className="kpi">{Math.round(week.data?.minutes ?? 0)}<small>{t.minutes} {t.listened}</small></div>
-          <div className="bars" style={{ height: 70 }}>
-            {Array.from({ length: 7 }, (_, i) => {
-              const day = Math.floor((Date.now() / 1000 - new Date().getTimezoneOffset() * 60) / 86400) - 6 + i
-              const m = week.data?.by_day.find((d) => d[0] === day)?.[1] ?? 0
-              const max = Math.max(1, ...(week.data?.by_day.map((d) => d[1]) ?? [1]))
-              return <div key={i} className="b" data-tip={`${Math.round(m)} min`}><i style={{ height: `${(m / max) * 100}%` }} /></div>
-            })}
-          </div>
-          {week.data?.top_artists[0] && <div className="muted" style={{ fontSize: 12.5 }}>{t.topArtist}: <b style={{ color: 'var(--text)' }}>{week.data.top_artists[0].key}</b></div>}
         </section>
       </div>
 

@@ -24,7 +24,7 @@ export function Mini() {
       <div style={{ minWidth: 0 }} data-tauri-drag-region>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6 }} data-tauri-drag-region>
           <div style={{ minWidth: 0 }} data-tauri-drag-region>
-            <div style={{ fontWeight: 650, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tr?.title ?? 'Lumen'}</div>
+            <div style={{ fontWeight: 650, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tr?.title ?? 'Echo'}</div>
             <div className="muted" style={{ fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tr?.artist ?? ''}</div>
           </div>
           <button className="icon-btn sm" style={{ width: 28, height: 28, marginTop: -4 }} aria-label="Close" onClick={() => getCurrentWindow().close()}><X size={14} /></button>

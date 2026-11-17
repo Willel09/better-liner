@@ -1,8 +1,8 @@
 {
-  "name": "lumen",
-  "version": "0.1.0",
+  "name": "echo",
+  "version": "0.3.0",
   "private": true,
-  "description": "Lumen — desktop music player with synced lyrics and reactive visuals",
+  "description": "Echo \u2014 desktop music player with synced lyrics and reactive visuals",
   "type": "module",
   "scripts": {
     "dev": "tauri dev",
@@ -16,6 +16,8 @@
     "@phosphor-icons/react": "^2.1.10",
     "@tauri-apps/api": "2.12.5",
     "@tauri-apps/plugin-dialog": "^2.8.4",
+    "@tauri-apps/plugin-process": "^2.4.0",
+    "@tauri-apps/plugin-updater": "^2.14.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

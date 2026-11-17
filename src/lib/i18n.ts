@@ -48,9 +48,10 @@ const sv = {
   appearance: 'Utseende', language: 'Språk', theme: 'Tema', system: 'System', dark: 'Mörkt', light: 'Ljust', accent: 'Accentfärg',
   visuals: 'Reaktiva visuals', visualsHint: 'Bakgrunden i Spelas nu rör sig med musiken.', wordSync: 'Ordsynk i lyrics', lyricsOffset: 'Lyrics-förskjutning',
   privacy: 'Integritet', privateSession: 'Privat lyssning', privateHint: 'Inget sparas i historik, statistik eller Discord.', hiddenSongs: 'Dolda låtar', bannedArtists: 'Blockerade artister', none: 'Inga',
-  storage: 'Lagring', storageHint: 'Lumen strömmar all musik. Bara metadata sparas lokalt (några MB), inga ljudfiler.',
+  storage: 'Lagring', storageHint: 'Echo strömmar all musik. Bara metadata sparas lokalt (några MB), inga ljudfiler.',
   shortcuts: 'Kortkommandon', djVoice: 'Låt DJ:n prata', djVoiceHint: 'Läser upp DJ-texterna med datorns röst.',
   moods: { happy: 'glad', chill: 'lugn', sad: 'ledsen', energetic: 'energisk', dark: 'mörk', romantic: 'romantisk', focused: 'fokus', angry: 'arg', dreamy: 'drömsk', uplifting: 'upplyftande' },
+  updates: 'Uppdatera appen', version: 'Version', checkUpdates: 'Sök efter uppdatering', upToDate: 'Du har senaste versionen', updateAvailable: 'Ny version:', installRestart: 'Installera och starta om', downloadingUpdate: 'Laddar ner…', updateFailed: 'Kunde inte söka efter uppdatering', about: 'Om Echo',
   connectYt: 'Koppla YouTube Music', connectYtHint: 'Lägg till en YouTube API-nyckel för att söka och spela musik.', connectAi: 'Aktivera AI', connectAiHint: 'Mistral eller DeepSeek ger smarta spellistor, radio, DJ och mer.', openSettings: 'Öppna inställningar',
 }
 type Dict = typeof sv
@@ -103,9 +104,10 @@ const en: Dict = {
   appearance: 'Appearance', language: 'Language', theme: 'Theme', system: 'System', dark: 'Dark', light: 'Light', accent: 'Accent color',
   visuals: 'Reactive visuals', visualsHint: 'The Now Playing background moves with the music.', wordSync: 'Word sync in lyrics', lyricsOffset: 'Lyrics offset',
   privacy: 'Privacy', privateSession: 'Private session', privateHint: 'Nothing is saved to history, statistics or Discord.', hiddenSongs: 'Hidden songs', bannedArtists: 'Blocked artists', none: 'None',
-  storage: 'Storage', storageHint: 'Lumen streams all music. Only metadata is stored locally (a few MB), no audio files.',
+  storage: 'Storage', storageHint: 'Echo streams all music. Only metadata is stored locally (a few MB), no audio files.',
   shortcuts: 'Shortcuts', djVoice: 'Let the DJ talk', djVoiceHint: 'Reads the DJ lines aloud with your computer’s voice.',
   moods: { happy: 'happy', chill: 'chill', sad: 'sad', energetic: 'energetic', dark: 'dark', romantic: 'romantic', focused: 'focused', angry: 'angry', dreamy: 'dreamy', uplifting: 'uplifting' },
+  updates: 'Update app', version: 'Version', checkUpdates: 'Check for updates', upToDate: 'You have the latest version', updateAvailable: 'New version:', installRestart: 'Install and restart', downloadingUpdate: 'Downloading…', updateFailed: 'Couldn’t check for updates', about: 'About Echo',
   connectYt: 'Connect YouTube Music', connectYtHint: 'Add a YouTube API key to search and play music.', connectAi: 'Turn on AI', connectAiHint: 'Mistral or DeepSeek power smart playlists, radio, the DJ and more.', openSettings: 'Open settings',
 }
 

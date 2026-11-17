@@ -17,7 +17,7 @@ function applyTheme() {
 applyTheme()
 useSettings.subscribe(applyTheme)
 dark.addEventListener('change', applyTheme)
-addEventListener('storage', (e) => { if (e.key === 'lumen.settings' && e.newValue) useSettings.set(JSON.parse(e.newValue)) })
+addEventListener('storage', (e) => { if (e.key === 'echo.settings' && e.newValue) useSettings.set(JSON.parse(e.newValue)) })
 if (isTauri) api.platform().then((p) => { if (p === 'macos' || p === 'windows') root.classList.add('vibrant') })
 
 const mount = document.getElementById('root')!

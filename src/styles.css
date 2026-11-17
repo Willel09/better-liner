@@ -1,4 +1,4 @@
-/* Lumen — Liquid Glass design system.
+/* Echo — Liquid Glass design system.
    Content sits on an ambient layer (blurred artwork); controls float above it as glass. */
 :root {
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
@@ -438,3 +438,4 @@ kbd { font: 600 11.5px var(--font); padding: 3px 7px; border-radius: 6px; backgr
 /* Keep chrome above the Now Playing visualizer; it shows through the glass instead of covering it. */
 .sidebar, .bar { z-index: 3; }
 .main { z-index: 1; }
+.spin { animation: spin 1s linear infinite; } @keyframes spin { to { transform: rotate(360deg); } }

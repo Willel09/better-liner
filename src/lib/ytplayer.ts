@@ -1,5 +1,5 @@
 // Official YouTube IFrame Player API. The player stays visible (≥200×200) as required by YouTube's terms;
-// Lumen only drives it through the public API (load/play/pause/seek/volume).
+// Echo only drives it through the public API (load/play/pause/seek/volume).
 declare global {
   interface Window { YT?: any; onYouTubeIframeAPIReady?: () => void }
 }
